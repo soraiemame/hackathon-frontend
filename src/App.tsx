@@ -1,36 +1,74 @@
-import { useQuery } from '@tanstack/react-query';
-import apiClient from './api/client';
-import type { Item } from './types/item';
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
+import { useAuth } from './contexts/Auth'
 
-async function fetchItems(): Promise<Item[]> {
-  const response = await apiClient.get('/items');
-  return response.data;
+// --- 
+import { Home } from './pages/Home'
+import { Register } from './pages/Register'
+import { Login } from './pages/Login'
+import { MyPage } from './pages/MyPage'
+
+// --- 
+import { ItemList } from './pages/ItemList'
+import { Search } from './pages/Search'
+import { ItemDetail } from './pages/ItemDetail'
+import { UserProfile } from './pages/UserProfile'
+import { ItemCreate } from './pages/ItemCreate'
+import { ItemEdit } from './pages/ItemEdit'
+import { Purchase } from './pages/Purchase'
+import { OrderDetail } from './pages/OrderDetail'
+import { NotFound } from './pages/NotFound'
+
+
+// --- 
+function ProtectedRoute() {
+    const { isLoggedIn } = useAuth()
+    if (!isLoggedIn) {
+        return <Navigate to="/login" replace />
+    }
+    return <Outlet />
 }
 
+function GuestRoute() {
+    const { isLoggedIn } = useAuth()
+    if (isLoggedIn) {
+        return <Navigate to="/users/me" replace />
+    }
+    return <Outlet />
+}
+
+// --- 
 function App() {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['items'],
-    queryFn: fetchItems,
-  });
+    return (
+        <Routes>
+            {/* ===========================================
+             * * =========================================== */}
+            <Route element={<GuestRoute />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/login" element={<Login />} />
+            </Route>
 
-  if (isLoading) {
-    return <div>ローディング中...</div>;
-  }
-
-  if (isError) {
-    return <div>エラーが発生しました</div>;
-  }
-
-  return (
-    <div>
-      <h1>商品一覧</h1>
-      <ul>
-        {data?.map(item => (
-          <li key={item.id}>{item.name} ({item.price}円)</li>
-        ))}
-      </ul>
-    </div>
-  );
+            {/* ===========================================
+             * * =========================================== */}
+            <Route element={<ProtectedRoute />}>
+                <Route path="/users/me" element={<MyPage />} />
+                <Route path="/items/new" element={<ItemCreate />} />
+                <Route path="/items/:id/edit" element={<ItemEdit />} />
+                <Route path="/items/:id/purchase" element={<Purchase />} />
+                <Route path="/orders/:id" element={<OrderDetail />} />
+            </Route>
+            
+            {/* ===========================================
+             * * =========================================== */}
+            <Route path="/items" element={<ItemList />} />
+            <Route path="/items/search" element={<Search />} />
+            <Route path="/items/:id" element={<ItemDetail />} />
+            <Route path="/users/:id" element={<UserProfile />} />
+            
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
+        </Routes>
+    )
 }
 
-export default App;
+export default App
