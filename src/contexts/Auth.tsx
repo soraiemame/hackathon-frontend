@@ -1,50 +1,90 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import apiClient from '../api/client';
 import { useQueryClient } from '@tanstack/react-query';
+import type { User } from '../types/user'; 
 
 interface AuthContextType {
   isLoggedIn: boolean;
-  login: (token: string) => void;
+  user: User | null; 
+  login: (token: string) => Promise<void>; 
   logout: () => void;
+  isInitializing: boolean; 
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  // 
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-        // 
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    }
-    return !!token; // 
-  });
+async function fetchMyProfile(): Promise<User> {
+    const { data } = await apiClient.get('/api/users/me');
+    return data;
+}
 
-  const queryClient = useQueryClient();
+export function AuthProvider({ children }: { children: ReactNode }) {
   
-  const login = (token: string) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true); // 
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    let isMounted = true; 
+
+    const initializeAuth = async () => {
+      const token = localStorage.getItem('authToken');
+      
+      if (token) {
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        try {
+          const profile = await fetchMyProfile();
+          if (isMounted) { 
+            setUser(profile);
+            setIsInitializing(false); // 
+          }
+        } catch (error) {
+          if (isMounted) { 
+            localStorage.removeItem('authToken');
+            delete apiClient.defaults.headers.common['Authorization'];
+            setUser(null);
+            setIsInitializing(false); // 
+          }
+        }
+      } else {
+          if (isMounted) {
+            setUser(null);
+            setIsInitializing(false); // 
+          }
+      }
+    };
+    
+    initializeAuth();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []); 
+
+  const login = async (token: string) => {
     localStorage.setItem('authToken', token);
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    setIsLoggedIn(true);
+    const profile = await fetchMyProfile(); 
+    setUser(profile);
   };
 
   const logout = () => {
+    setUser(null);
     localStorage.removeItem('authToken');
     delete apiClient.defaults.headers.common['Authorization'];
-    setIsLoggedIn(false);
-    queryClient.clear();
+    queryClient.clear(); 
   };
+  
+  const isLoggedIn = !!user; 
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout, isInitializing }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-// 
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

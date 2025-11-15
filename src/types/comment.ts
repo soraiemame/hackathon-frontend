@@ -5,3 +5,7 @@ export interface Comment {
   body: string;
   created_at: string; // 
 }
+
+export interface CommentCreate {
+  body: string;
+}

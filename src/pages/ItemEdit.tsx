@@ -1,68 +1,134 @@
-import { useQuery, useMutation } from '@tanstack/react-query'
-import { useParams, useNavigate } from 'react-router-dom'
-import apiClient from '../api/client'
-import type { Item, ItemCreate } from '../types/item'
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useItemEdit } from '../hooks/useItemEdit'; // 
 
-async function fetchItem(itemId: string): Promise<Item> {
-  const { data } = await apiClient.get(`/api/items/${itemId}`)
-  return data
-}
-
-async function updateItem(vars: { itemId: string, data: ItemCreate }): Promise<Item> {
-  const { data } = await apiClient.put(`/api/items/${vars.itemId}`, vars.data)
-  return data
-}
+// v0/Shadcn UI 
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Textarea } from "../components/ui/textarea";
+import type { ItemCreate } from '../types/item';
+import { FullPageLoader } from '../components/ui/full-page-loader';
 
 export function ItemEdit() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
+  const { id: itemId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
-  const [name, setName] = useState('')
-  const [price, setPrice] = useState(0)
+  // 1. 
+  const { query, mutation } = useItemEdit(itemId);
 
-  const { data: item, isLoading } = useQuery({
-    queryKey: ['itemDetail', id],
-    queryFn: () => fetchItem(id!),
-  })
+  // 2. 
+  const [name, setName] = useState('');
+  const [price, setPrice] = useState(0);
+  const [description, setDescription] = useState('');
 
-  useEffect(() => {
-    if (item) {
-      setName(item.name)
-      setPrice(item.price)
-    }
-  }, [item])
+  // 3. 
+  useEffect(() => {
+    if (query.data) {
+      setName(query.data.name);
+      setPrice(query.data.price);
+      setDescription(query.data.description || '');
+    }
+  }, [query.data]); // 
 
-  const mutation = useMutation({
-    mutationFn: updateItem,
-    onSuccess: (updatedItem) => {
-      navigate(`/items/${updatedItem.id}`)
-    }
-  })
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.data) return; 
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    // 4. 
+    const updatedData: ItemCreate = { 
+        name: name, 
+        price: price, 
+        description: description, 
+        image_keys: query.data.images.map(img => img.image_key) 
+    };
+    
+    mutation.mutate({ itemId: itemId!, data: updatedData });
+  };
 
-    const updatedData: ItemCreate = { 
-        name: name, 
-        price: price, 
-        description: item?.description || "", 
-        image_keys: item?.images.map(img => img.image_key) || [] 
-    }
-    
-    mutation.mutate({ itemId: id!, data: updatedData })
-  }
+  if (query.isLoading) return <FullPageLoader />
+  if (query.isError || !query.data) return <div>商品データが見つかりません。</div>;
 
-  if (isLoading) return <div>ローディング中...</div>
+  // 5. 
+  return (
+    <div className="container max-w-3xl px-4 py-8 md:px-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">商品を編集</CardTitle>
+          <CardDescription>商品情報を更新してください</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            
+            <div className="space-y-2">
+              <Label>商品画像（現在は編集できません）</Label>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
+                {query.data.images.map((image, index) => (
+                  <div key={index} className="relative aspect-square">
+                    <img
+                      src={image.image_url || "/placeholder.svg"}
+                      alt={`商品画像 ${index + 1}`}
+                      className="rounded-md object-cover w-full h-full border opacity-50"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <h1>商品編集ページ</h1>
-      <input type="text" value={name} onChange={e => setName(e.target.value)} />
-      <input type="number" value={price} onChange={e => setPrice(Number(e.target.value))} />
-      <button type="submit" disabled={mutation.isPending}>
-        {mutation.isPending ? "更新中..." : "更新する"}
-      </button>
-    </form>
-  )
+            <div className="space-y-2">
+              <Label htmlFor="name">商品名</Label>
+              <Input 
+                id="name" 
+                value={name} 
+                onChange={e => setName(e.target.value)} 
+                required 
+                maxLength={40} 
+              />
+              <p className="text-xs text-muted-foreground">40文字以内</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">商品説明</Label>
+              <Textarea
+                id="description"
+                rows={8}
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                required
+                maxLength={1000}
+              />
+              <p className="text-xs text-muted-foreground">1000文字以内</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="price">価格</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">¥</span>
+                <Input 
+                id="price" 
+                type="number" 
+                className="pl-8" 
+                value={price}
+                onChange={e => setPrice(Number(e.target.value))}
+                required 
+                min={300} 
+              />
+              </div>
+            	<p className="text-xs text-muted-foreground">販売手数料10%が差し引かれます</p>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <Button type="submit" className="flex-1" disabled={mutation.isPending}>
+                {mutation.isPending ? "保存中..." : "変更を保存"}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+                キャンセル
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }

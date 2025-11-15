@@ -1,69 +1,61 @@
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate, Link } from 'react-router-dom'
 import apiClient from '../api/client'
-import { useAuth } from '../contexts/Auth'
 import type { User } from '../types/user'
 import type { Order } from '../types/order'
+import type { Item } from '../types/item'
+import { useAuth } from '../contexts/Auth'
 
-async function fetchMyProfile(): Promise<User> {
-    const { data } = await apiClient.get('/api/users/me')
+// 
+import { ProfileHeader } from './ProfileHeader'
+import { ProfileTabs } from './ProfileTabs'
+import { useNavigate } from 'react-router-dom'
+import { FullPageLoader } from '../components/ui/full-page-loader'
+
+async function fetchMyOrders(): Promise<Order[]> {
+    const { data } = await apiClient.get('/api/orders/me')
+    return data
+}
+
+async function fetchMyListings(userId: number): Promise<Item[]> {
+    const { data } = await apiClient.get('/api/items', {
+        params: { seller_id: userId }
+    })
     return data
 }
 
-async function fetchMyOrders(): Promise<Order[]> {
-    const { data } = await apiClient.get('/api/orders/me')
-    return data
+export interface MyPageContextType {
+    user: User | null; // 
+    orders: Order[] | undefined;
 }
 
 export function MyPage() {
     const auth = useAuth()
-    const navigate = useNavigate()
-
-    const { data: user, isLoading: isLoadingUser } = useQuery({
-        queryKey: ['myProfile'],
-        queryFn: fetchMyProfile,
-    })
+    const { user } = auth;
 
     const { data: orders, isLoading: isLoadingOrders } = useQuery({
         queryKey: ['myOrders'],
         queryFn: fetchMyOrders,
     })
 
-    const handleLogout = () => {
-        auth.logout()
-        navigate('/')
+    const { data: listings, isLoading: isLoadingListings } = useQuery({
+        queryKey: ['myListings', user?.id],
+        queryFn: () => fetchMyListings(user!.id),
+        enabled: !!user,
+    })
+
+    if (isLoadingOrders || isLoadingListings) {
+        return <FullPageLoader />
     }
 
-    if (isLoadingUser || isLoadingOrders) {
-        return <div>ローディング中...</div>
+    if (!user) {
+        return <div>ユーザー情報の読み込みに失敗しました。</div>
     }
 
     return (
-        <div>
-            <h1>マイページ</h1>
-            
-            <h2>ようこそ、{user?.username || user?.email} さん</h2>
-            <p>ここにプロフィール情報を表示します。</p>
-            {/* <Link to="/account/edit">プロフィールを編集</Link> */}
-            <hr />
+        <div className="container px-4 py-8 md:px-6">
+            <ProfileHeader user={user} />
 
-            <h2>あなたの取引履歴</h2>
-            {orders && orders.length > 0 ? (
-                <ul>
-                    {orders.map(order => (
-                        <li key={order.id}>
-                            <Link to={`/orders/${order.id}`}>
-                                {order.item.name} ({order.status})
-                            </Link>
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p>取引履歴はまだありません。</p>
-            )}
-            
-            <hr />
-            <button onClick={handleLogout}>ログアウト</button>
+            <ProfileTabs user={user} orders={orders} listings={listings} />
         </div>
     )
 }

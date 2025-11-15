@@ -1,126 +1,181 @@
+// src/pages/ItemCreate.tsx
+
 import { useState, useRef } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import type { ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '../api/client';
-import axios from 'axios';
+import { useCreateItem } from '../hooks/useCreateItem'; // 
 
-import type { Item, ItemCreate } from '../types/item';
-import type { SignedUrlResponse } from '../types/storage';
-
-// 
-async function getSignedUrl(vars: { file: File }): Promise<{ uploadUrl: string, fileKey: string, file: File }> {
-    const { data } = await apiClient.post<SignedUrlResponse>('/api/items/generate-signed-url', {
-        filename: vars.file.name,
-        content_type: vars.file.type,
-    });
-    return { uploadUrl: data.upload_url, fileKey: data.file_key, file: vars.file };
-}
-
-// 2. GCS
-async function uploadToGCS(vars: { uploadUrl: string, file: File, fileKey: string }) {
-    await axios.put(vars.uploadUrl, vars.file, {
-        headers: {
-            'Content-Type': vars.file.type,
-        },
-    });
-    // 
-    return { fileKey: vars.fileKey };
-}
-
-// 3. FastAPI
-async function createItemInDB(vars: { itemData: ItemCreate }): Promise<Item> {
-    const { data } = await apiClient.post<Item>('/api/items', vars.itemData);
-    return data;
-}
+// v0/Shadcn UI 
+import { Button } from "../components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
+import { Input } from "../components/ui/input"
+import { Label } from "../components/ui/label"
+import { Textarea } from "../components/ui/textarea"
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select" // 
+import { X, Upload } from "lucide-react"
 
 export function ItemCreate() {
     const navigate = useNavigate();
+
+    // 1. 
     const [name, setName] = useState('');
-    const [price, setPrice] = useState(0);
+    const [price, setPrice] = useState(300);
     const [description, setDescription] = useState('');
-    const imageInputRef = useRef<HTMLInputElement>(null);
+    const [files, setFiles] = useState<File[]>([]);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // 2. 
+    const { createItem, isLoading } = useCreateItem();
 
     // 
-    const dbMutation = useMutation({
-        mutationFn: createItemInDB,
-        onSuccess: (createdItem) => {
-            navigate(`/items/${createdItem.id}`);
-        },
-        onError: () => {
-            alert("DBへの保存に失敗しました。");
-        }
-    });
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const newFiles = Array.from(e.target.files);
+            const totalFiles = files.length + newFiles.length;
 
-    // 
-    const gcsMutation = useMutation({
-        mutationFn: uploadToGCS,
-        onSuccess: (data) => {
-            dbMutation.mutate({ 
-                itemData: {
-                    name: name,
-                    price: price,
-                    description: description,
-                    image_keys: [data.fileKey] // 
-                }
-            });
-        },
-        onError: () => {
-             alert("GCSへのアップロードに失敗しました。");
-        }
-    });
+            if (totalFiles > 10) {
+                alert("画像は最大10枚までです。");
+                return;
+            }
 
-    // 
-    const signedUrlMutation = useMutation({
-        mutationFn: getSignedUrl,
-        onSuccess: (data) => {
-            gcsMutation.mutate({ uploadUrl: data.uploadUrl, file: data.file, fileKey: data.fileKey });
-        },
-        onError: () => {
-            alert("署名付きURLの取得に失敗しました。");
+            const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+            setFiles(prev => [...prev, ...newFiles]);
+            setImagePreviews(prev => [...prev, ...newPreviews]);
         }
-    });
+    };
+
+    const removeImage = (indexToRemove: number) => {
+        URL.revokeObjectURL(imagePreviews[indexToRemove]);
+        setFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+        setImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const file = imageInputRef.current?.files?.[0];
-
-        if (!file) {
-            alert("画像を選択してください。");
+        if (files.length === 0) {
+            alert("画像を1枚以上選択してください。");
             return;
         }
-        
-        signedUrlMutation.mutate({ file });
+
+        // 3. 
+        createItem({ name, price, description, files });
     };
 
-    const isLoading = signedUrlMutation.isPending || gcsMutation.isPending || dbMutation.isPending;
-
+    // 4. 
     return (
-        <form onSubmit={handleSubmit}>
-            <h1>商品を出品する</h1>
-            
-            <div>
-                <label>商品名:</label>
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
-            </div>
-            
-            <div>
-                <label>価格:</label>
-                <input type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} required />
-            </div>
-            
-            <div>
-                <label>商品説明:</label>
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
-            </div>
+        <div className="container max-w-3xl px-4 py-8 md:px-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-2xl">商品を出品</CardTitle>
+                    <CardDescription>商品情報を入力して出品してください</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="space-y-2">
+                            <Label>商品画像（最大10枚）*</Label>
+                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
+                                {imagePreviews.map((image, index) => (
+                                    <div key={index} className="relative aspect-square">
+                                        <img
+                                            src={image}
+                                            alt={`商品画像 ${index + 1}`}
+                                            className="rounded-md object-cover w-full h-full border"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="icon"
+                                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                                            onClick={() => removeImage(index)}
+                                        >
+                                            <X className="h-3 w-3" />
+                                        </Button>
+                                        {index === 0 && (
+                                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+                                                <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                                                    メイン
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                                {files.length < 10 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="aspect-square rounded-md border-2 border-dashed border-muted-foreground/25 hover:border-muted-foreground/50 transition-colors flex items-center justify-center"
+                                    >
+                                        <Upload className="h-6 w-6 text-muted-foreground" />
+                                    </button>
+                                )}
+                            </div>
+                            <Input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                multiple
+                                accept="image/*"
+                                className="hidden"
+                            />
+                            <p className="text-xs text-muted-foreground">最初の画像がメイン画像になります</p>
+                        </div>
 
-            <div>
-                <label>画像 (1枚):</label>
-                <input type="file" ref={imageInputRef} accept="image/*" required />
-            </div>
-            
-            <button type="submit" disabled={isLoading}>
-                {isLoading ? '出品中...' : '出品する'}
-            </button>
-        </form>
-    );
+                        <div className="space-y-2">
+                            <Label htmlFor="title">商品名 *</Label>
+                            <Input
+                                id="title"
+                                placeholder="例：ほぼ新品 MacBook Pro 13インチ"
+                                required
+                                maxLength={40}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">40文字以内</p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="description">商品説明 *</Label>
+                            <Textarea
+                                id="description"
+                                rows={8}
+                                placeholder="商品の状態や付属品など、詳しく説明してください"
+                                required
+                                maxLength={1000}
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">1000文字以内</p>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="price">価格 *</Label>
+                            Click to copy
+                            <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">¥</span>
+                                <Input
+                                    id="price"
+                                    type="number"
+                                    className="pl-8"
+                                    placeholder="300"
+                                    required
+                                    min={300}
+                                    value={price}
+                                    onChange={(e) => setPrice(Number(e.target.value))}
+                                />
+                            </div>
+                            <p className="text-xs text-muted-foreground">販売手数料10%が差し引かれます（最低価格: ¥300）</p>
+                        </div>
+                        <div className="flex gap-4 pt-4">
+                            <Button type="submit" className="flex-1" disabled={isLoading}>
+                                {isLoading ? '出品中...' : '出品する'}
+                            </Button>
+                            <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+                                キャンセル
+                            </Button>
+                        </div>
+                    </form>
+                </CardContent>
+            </Card>
+        </div>
+    )
 }

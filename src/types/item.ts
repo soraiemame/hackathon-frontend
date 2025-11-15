@@ -21,4 +21,5 @@ export interface Item extends ItemBase {
   selling: boolean;
   created_at: string;
   images: ItemImage[];
+  is_deleted: boolean;
 }
