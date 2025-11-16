@@ -1,30 +1,43 @@
-// src/pages/Search.tsx
-
 import { useState } from "react";
-import { useSearchParams } from 'react-router-dom';
-import { useItemSearch } from '../hooks/useItemSearch'; // 
+import { useSearchParams } from "react-router-dom";
+import { useItemSearch } from "../hooks/useItemSearch";
 
-// v0/Shadcn UI 
+// v0/Shadcn UI
 import { ItemCard } from "../components/item-card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Slider } from "../components/ui/slider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Search as SearchIcon, SlidersHorizontal } from "lucide-react"; // 
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "../components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Search as SearchIcon, SlidersHorizontal } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../components/ui/sheet";
 
 export function Search() {
-  // 1. 
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
-  const query = searchParams.get('q') || '';
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
+  const query = searchParams.get("q") || "";
 
-  // 2. 
   const { data: items, isLoading } = useItemSearch(query);
 
-  // 3. 
   const [priceRange, setPriceRange] = useState([0, 100000]);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -32,7 +45,7 @@ export function Search() {
     setSearchParams({ q: searchTerm });
   };
 
-  // 4. 
+  // 4.
   return (
     <div className="container px-4 py-8 md:px-6">
       <div className="flex flex-col gap-6">
@@ -56,7 +69,11 @@ export function Search() {
             {/* Mobile Filter Button */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="lg:hidden bg-transparent">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="lg:hidden bg-transparent"
+                >
                   <SlidersHorizontal className="h-4 w-4" />
                   <span className="sr-only">フィルター</span>
                 </Button>
@@ -64,10 +81,15 @@ export function Search() {
               <SheetContent side="left" className="w-80 overflow-y-auto">
                 <SheetHeader>
                   <SheetTitle>絞り込み</SheetTitle>
-                  <SheetDescription>検索条件を設定してください</SheetDescription>
+                  <SheetDescription>
+                    検索条件を設定してください
+                  </SheetDescription>
                 </SheetHeader>
                 <div className="mt-6">
-                  <FilterContent priceRange={priceRange} setPriceRange={setPriceRange} />
+                  <FilterContent
+                    priceRange={priceRange}
+                    setPriceRange={setPriceRange}
+                  />
                 </div>
               </SheetContent>
             </Sheet>
@@ -82,7 +104,10 @@ export function Search() {
                 <CardTitle>絞り込み</CardTitle>
               </CardHeader>
               <CardContent>
-                <FilterContent priceRange={priceRange} setPriceRange={setPriceRange} />
+                <FilterContent
+                  priceRange={priceRange}
+                  setPriceRange={setPriceRange}
+                />
               </CardContent>
             </Card>
           </aside>
@@ -93,7 +118,9 @@ export function Search() {
               <p className="text-muted-foreground">
                 {query && (
                   <>
-                    <span className="font-semibold text-foreground">{items?.length || 0}</span>
+                    <span className="font-semibold text-foreground">
+                      {items?.length || 0}
+                    </span>
                     件の商品が見つかりました
                   </>
                 )}
@@ -132,17 +159,17 @@ export function Search() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-// 
-// 
+//
+//
 function FilterContent({
   priceRange,
   setPriceRange,
 }: {
-  priceRange: number[]
-  setPriceRange: (value: number[]) => void
+  priceRange: number[];
+  setPriceRange: (value: number[]) => void;
 }) {
   return (
     <div className="space-y-6">
@@ -162,24 +189,35 @@ function FilterContent({
       <div className="space-y-3">
         <Label>価格</Label>
         <div className="space-y-4">
-          <Slider min={0} max={100000} step={1000} value={priceRange} onValueChange={setPriceRange} className="py-4" />
+          <Slider
+            min={0}
+            max={100000}
+            step={1000}
+            value={priceRange}
+            onValueChange={setPriceRange}
+            className="py-4"
+          />
           <div className="flex items-center gap-2 text-sm">
             <Input
               type="number"
               value={priceRange[0]}
-              onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+              onChange={(e) =>
+                setPriceRange([Number(e.target.value), priceRange[1]])
+              }
               className="h-8"
             />
             <span className="text-muted-foreground">〜</span>
             <Input
               type="number"
               value={priceRange[1]}
-              onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+              onChange={(e) =>
+                setPriceRange([priceRange[0], Number(e.target.value)])
+              }
               className="h-8"
             />
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

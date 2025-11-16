@@ -1,4 +1,4 @@
-import type { Item } from './item';
+import type { Item } from "./item";
 
 export type OrderStatus = "pending" | "shipped" | "completed";
 
@@ -9,6 +9,6 @@ export interface Order {
   seller_id: number;
   status: OrderStatus;
   created_at: string;
-  
+
   item: Item;
 }

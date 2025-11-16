@@ -1,7 +1,14 @@
-import { Link } from 'react-router-dom'
-import { Button } from "../components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card"
-import { PackageX } from "lucide-react"
+import { Link } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { PackageX } from "lucide-react";
 
 export function NotFound() {
   return (
@@ -11,7 +18,9 @@ export function NotFound() {
           <div className="flex items-center justify-center mb-4">
             <PackageX className="h-10 w-10 text-destructive" />
           </div>
-          <CardTitle className="text-2xl text-center">404 - Not Found</CardTitle>
+          <CardTitle className="text-2xl text-center">
+            404 - Not Found
+          </CardTitle>
           <CardDescription className="text-center">
             お探しのページは見つかりませんでした。
           </CardDescription>
@@ -28,5 +37,5 @@ export function NotFound() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

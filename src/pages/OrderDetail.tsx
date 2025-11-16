@@ -1,12 +1,17 @@
 // src/pages/OrderDetail.tsx
 
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { useOrder, useOrderPartner } from '../hooks/useOrderDetail'; // 
-import { useAuth } from '../contexts/Auth'; // 
+import { useOrder, useOrderPartner } from "../hooks/useOrderDetail";
+import { useAuth } from "../contexts/Auth";
 
-// v0/Shadcn UI 
+// v0/Shadcn UI
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Badge } from "../components/ui/badge";
 import { Separator } from "../components/ui/separator";
@@ -17,16 +22,19 @@ export function OrderDetail() {
   const { id: orderId } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // 1. 
+  // 1.
   const { user: currentUser } = useAuth();
   const { data: order, isLoading: isLoadingOrder } = useOrder(orderId);
-  const { data: partner, isLoading: isLoadingPartner } = useOrderPartner(order, currentUser?.id);
+  const { data: partner, isLoading: isLoadingPartner } = useOrderPartner(
+    order,
+    currentUser?.id,
+  );
 
-  if (isLoadingOrder || (isLoadingPartner && order)) return <FullPageLoader />
+  if (isLoadingOrder || (isLoadingPartner && order)) return <FullPageLoader />;
   if (!order) return <div>取引が見つかりません。</div>;
 
-  // 2. 
-  const total = order.item.price; // 
+  // 2.
+  const total = order.item.price;
   const isPurchase = order.buyer_id === currentUser?.id;
 
   return (
@@ -37,7 +45,11 @@ export function OrderDetail() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>取引詳細</CardTitle>
-              <Badge variant={order.status === "completed" ? "secondary" : "default"}>{order.status}</Badge>
+              <Badge
+                variant={order.status === "completed" ? "secondary" : "default"}
+              >
+                {order.status}
+              </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -46,7 +58,10 @@ export function OrderDetail() {
                 <Package className="h-4 w-4" />
                 商品情報
               </h3>
-              <Link to={`/items/${order.item.id}`} className="flex gap-4 hover:opacity-80 transition-opacity">
+              <Link
+                to={`/items/${order.item.id}`}
+                className="flex gap-4 hover:opacity-80 transition-opacity"
+              >
                 <img
                   src={order.item.images[0]?.image_url || "/placeholder.svg"}
                   alt={order.item.name}
@@ -55,21 +70,27 @@ export function OrderDetail() {
                 <div className="flex-1">
                   <h4 className="font-medium mb-2">
                     {order.item.name}
-                    {order.item.is_deleted && <span className="text-red-500 text-sm ml-2">(削除済み商品)</span>}
+                    {order.item.is_deleted && (
+                      <span className="text-red-500 text-sm ml-2">
+                        (削除済み商品)
+                      </span>
+                    )}
                   </h4>
-                  <p className="text-lg font-bold text-primary">¥{order.item.price.toLocaleString()}</p>
+                  <p className="text-lg font-bold text-primary">
+                    ¥{order.item.price.toLocaleString()}
+                  </p>
                 </div>
               </Link>
             </div>
 
-            {/*             <div>
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                配送先
-              </h3>
-              
-            </div>
-            <Separator />
+            {/*       <div>
+       <h3 className="font-semibold mb-3 flex items-center gap-2">
+        <MapPin className="h-4 w-4" />
+        配送先
+       </h3>
+       
+      </div>
+      <Separator />
             */}
 
             {/* Payment */}
@@ -86,7 +107,9 @@ export function OrderDetail() {
                 <Separator className="my-2" />
                 <div className="flex justify-between text-lg font-bold">
                   <span>合計</span>
-                  <span className="text-primary">¥{total.toLocaleString()}</span>
+                  <span className="text-primary">
+                    ¥{total.toLocaleString()}
+                  </span>
                 </div>
               </div>
             </div>
@@ -106,10 +129,14 @@ export function OrderDetail() {
               >
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={"/placeholder.svg"} />
-                  <AvatarFallback>{(partner.username || partner.email)[0]}</AvatarFallback>
+                  <AvatarFallback>
+                    {(partner.username || partner.email)[0]}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <p className="font-semibold">{partner.username || partner.email}</p>
+                  <p className="font-semibold">
+                    {partner.username || partner.email}
+                  </p>
                 </div>
               </Link>
             ) : (
@@ -126,7 +153,9 @@ export function OrderDetail() {
         {order.status === "shipped" && isPurchase && (
           <Card className="bg-primary/5 border-primary/20">
             <CardContent className="pt-6">
-              <p className="text-sm mb-4 text-center">商品が届きましたら、受取評価をお願いします</p>
+              <p className="text-sm mb-4 text-center">
+                商品が届きましたら、受取評価をお願いします
+              </p>
               <Button className="w-full">
                 <Star className="h-4 w-4 mr-2" />
                 受取評価をする
@@ -135,10 +164,14 @@ export function OrderDetail() {
           </Card>
         )}
 
-        <Button variant="outline" className="w-full bg-transparent" onClick={() => navigate("/users/me")}>
+        <Button
+          variant="outline"
+          className="w-full bg-transparent"
+          onClick={() => navigate("/users/me")}
+        >
           マイページに戻る
         </Button>
       </div>
     </div>
-  )
+  );
 }

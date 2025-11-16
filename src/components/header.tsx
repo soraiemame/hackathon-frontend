@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { Link } from "react-router-dom"
-import { Search, ShoppingBag, User, Plus } from "lucide-react"
-import { Button } from "./ui/button"
-import { Input } from "./ui/input"
-import { useAuth } from "../contexts/Auth"
+import { Link } from "react-router-dom";
+import { Search, ShoppingBag, User, Plus } from "lucide-react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { useAuth } from "../contexts/Auth";
 
 export function Header() {
-  const { isLoggedIn } = useAuth()
+  const { isLoggedIn } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -20,7 +20,11 @@ export function Header() {
         <div className="flex flex-1 items-center gap-4 md:gap-6 max-w-xl">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input type="search" placeholder="商品を検索" className="pl-9 bg-muted/50" />
+            <Input
+              type="search"
+              placeholder="商品を検索"
+              className="pl-9 bg-muted/50"
+            />
           </div>
         </div>
 
@@ -53,5 +57,5 @@ export function Header() {
         </nav>
       </div>
     </header>
-  )
+  );
 }
