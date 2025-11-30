@@ -9,6 +9,7 @@ export interface ItemBase {
   name: string;
   description?: string;
   price: number;
+  condition: number;
 }
 
 export interface ItemCreate extends ItemBase {

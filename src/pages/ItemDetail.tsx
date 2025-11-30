@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../contexts/Auth";
 
 //
@@ -27,13 +27,17 @@ import {
   X,
 } from "lucide-react";
 import { FullPageLoader } from "../components/ui/full-page-loader";
+import { useItemLike } from "../hooks/useLike";
 
 export function ItemDetail() {
   const { id: itemId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   const { isLoggedIn } = useAuth();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [commentBody, setCommentBody] = useState("");
+
+  const { likeCount, isLiked, toggleLike, isLikeProcessing } = useItemLike(itemId);
 
   const {
     data: item,
@@ -57,7 +61,23 @@ export function ItemDetail() {
     return <div>商品IDが指定されていません。</div>;
   }
 
-  // ---
+  const conditionNames = [
+    "新品・未使用",
+    "未使用に近い",
+    "目立った傷や汚れなし",
+    "やや傷や汚れあり",
+    "全体的に状態が悪い"
+  ];
+
+  const handleLikeClick = () => {
+    if (!isLoggedIn) {
+      if (window.confirm("いいねをするにはログインが必要です。ログインページに移動しますか？")) {
+        navigate("/login");
+      }
+      return;
+    }
+    toggleLike();
+  };
   const handleSubmitComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentBody.trim()) return;
@@ -91,7 +111,6 @@ export function ItemDetail() {
 
   const isOwner = isLoggedIn && currentUser?.id === item?.seller_id;
 
-  // ---
   if (isLoadingItem || commentsQuery.isLoading || (isLoadingSeller && item)) {
     return <FullPageLoader />;
   }
@@ -100,7 +119,6 @@ export function ItemDetail() {
     return <div>商品が見つかりません。</div>;
   }
 
-  // ---
   return (
     <div className="container px-4 py-8 md:px-6">
       <div className="grid gap-6 lg:grid-cols-3">
@@ -265,8 +283,8 @@ export function ItemDetail() {
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Heart className="h-4 w-4" />
-                  <span>{0}</span>
+                  <Heart className={`h-4 w-4 ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
+                  <span>{likeCount}</span>
                   <MessageCircle className="h-4 w-4 ml-2" />
                   <span>{commentsQuery.data?.length || 0}</span>
                 </div>
@@ -276,7 +294,7 @@ export function ItemDetail() {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">商品の状態</span>
-                    <Badge variant="secondary">{"(未実装)"}</Badge>
+                    <Badge variant="secondary">{conditionNames[item.condition - 1]}</Badge>
                   </div>
                 </div>
 
@@ -294,9 +312,16 @@ export function ItemDetail() {
                       <Link to={`/items/${item.id}/purchase`}>購入する</Link>
                     </Button>
                     <div className="grid grid-cols-2 gap-2">
-                      <Button variant="outline" size="sm">
-                        <Heart className="h-4 w-4 mr-1" />
-                        いいね
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleLikeClick}
+                        disabled={isLikeProcessing}
+                        className={isLiked ? "text-red-600 border-red-200 bg-red-50" : ""} // Optional styling enhancement
+                      >
+                        <Heart className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`} />
+                        {isLiked ? "いいね済み" : "いいね"}
                       </Button>
                       <Button variant="outline" size="sm">
                         <Share2 className="h-4 w-4 mr-1" />

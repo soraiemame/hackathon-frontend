@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "react-router-dom";
-import { Search, ShoppingBag, User, Plus } from "lucide-react";
+import { Search, ShoppingBag, User, Plus, List } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useAuth } from "../contexts/Auth";
@@ -29,6 +29,12 @@ export function Header() {
         </div>
 
         <nav className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
+            <Link to="/items">
+              <List className="h-5 w-5" />
+              <span className="sr-only">商品一覧</span>
+            </Link>
+          </Button>
           {isLoggedIn ? (
             <>
               <Button variant="ghost" size="icon" asChild>

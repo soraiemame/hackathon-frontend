@@ -17,7 +17,7 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select" //
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select" //
 import { X, Upload } from "lucide-react";
 
 export function ItemCreate() {
@@ -27,6 +27,7 @@ export function ItemCreate() {
   const [name, setName] = useState("");
   const [price, setPrice] = useState(300);
   const [description, setDescription] = useState("");
+  const [condition, setCondition] = useState('1');
   const [files, setFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -67,7 +68,7 @@ export function ItemCreate() {
     }
 
     // 3.
-    createItem({ name, price, description, files });
+    createItem({ name, price, description,condition: Number(condition), files });
   };
 
   // 4.
@@ -157,6 +158,25 @@ export function ItemCreate() {
               />
               <p className="text-xs text-muted-foreground">1000文字以内</p>
             </div>
+            <div className="space-y-2">
+                          <Label>商品の状態 *</Label>
+                          <Select 
+                            value={condition} 
+                            onValueChange={setCondition} 
+                            required
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="状態を選択" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">新品・未使用</SelectItem>
+                              <SelectItem value="2">未使用に近い</SelectItem>
+                              <SelectItem value="3">目立った傷や汚れなし</SelectItem>
+                              <SelectItem value="4">やや傷や汚れあり</SelectItem>
+                              <SelectItem value="5">全体的に状態が悪い</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
             <div className="space-y-2">
               <Label htmlFor="price">価格 *</Label>
               Click to copy

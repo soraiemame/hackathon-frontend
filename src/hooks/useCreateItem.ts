@@ -42,6 +42,7 @@ interface CreateItemVariables {
   name: string;
   price: number;
   description: string;
+  condition: number;
   files: File[];
 }
 
@@ -68,8 +69,10 @@ export function useCreateItem() {
         name: vars.name,
         price: vars.price,
         description: vars.description,
+        condition: vars.condition,
         image_keys: signedUrlResults.map((result) => result.fileKey),
       };
+      console.log(itemData);
       const createdItem = await createItemInDB(itemData);
 
       return createdItem;
