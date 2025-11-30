@@ -47,7 +47,8 @@ async function deleteComment(vars: {
 
 // ---
 
-export function useItem(itemId: string | undefined) { // ← 修正
+export function useItem(itemId: string | undefined) {
+  // ← 修正
   return useQuery({
     queryKey: ["itemDetail", itemId],
     // queryFnは enabled: true の時（itemIdがstringの時）しか実行されない
@@ -57,7 +58,7 @@ export function useItem(itemId: string | undefined) { // ← 修正
 }
 
 /**
-* */
+ * */
 // (このフックは元から undefined 対応済みのため変更なし)
 export function useItemSeller(item: Item | undefined) {
   return useQuery({
@@ -68,7 +69,8 @@ export function useItemSeller(item: Item | undefined) {
   });
 }
 
-export function useItemComments(itemId: string | undefined) { // ← 修正
+export function useItemComments(itemId: string | undefined) {
+  // ← 修正
   const queryClient = useQueryClient();
 
   const commentsQuery = useQuery({

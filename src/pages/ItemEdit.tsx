@@ -16,7 +16,13 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import type { ItemCreate } from "../types/item";
 import { FullPageLoader } from "../components/ui/full-page-loader";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 
 export function ItemEdit() {
   const { id: itemId } = useParams<{ id: string }>();
@@ -27,7 +33,7 @@ export function ItemEdit() {
   const [name, setName] = useState("");
   const [price, setPrice] = useState(0);
   const [description, setDescription] = useState("");
-  const [condition, setCondition] = useState('1');
+  const [condition, setCondition] = useState("1");
 
   useEffect(() => {
     if (query.data) {
@@ -108,24 +114,20 @@ export function ItemEdit() {
               <p className="text-xs text-muted-foreground">1000文字以内</p>
             </div>
             <div className="space-y-2">
-                          <Label>商品の状態 *</Label>
-                          <Select 
-                            value={condition} 
-                            onValueChange={setCondition} 
-                            required
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="状態を選択" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">新品・未使用</SelectItem>
-                              <SelectItem value="2">未使用に近い</SelectItem>
-                              <SelectItem value="3">目立った傷や汚れなし</SelectItem>
-                              <SelectItem value="4">やや傷や汚れあり</SelectItem>
-                              <SelectItem value="5">全体的に状態が悪い</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+              <Label>商品の状態 *</Label>
+              <Select value={condition} onValueChange={setCondition} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="状態を選択" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">新品・未使用</SelectItem>
+                  <SelectItem value="2">未使用に近い</SelectItem>
+                  <SelectItem value="3">目立った傷や汚れなし</SelectItem>
+                  <SelectItem value="4">やや傷や汚れあり</SelectItem>
+                  <SelectItem value="5">全体的に状態が悪い</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2"></div>
 
             <div className="space-y-2">

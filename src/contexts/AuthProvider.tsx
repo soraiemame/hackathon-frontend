@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { User } from "../types/user";
 import { AuthContext } from "./Auth";
 
-
 async function fetchMyProfile(): Promise<User> {
   const { data } = await apiClient.get("/api/users/me");
   return data;

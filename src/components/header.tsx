@@ -29,7 +29,12 @@ export function Header() {
         </div>
 
         <nav className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
+          <Button
+            variant="ghost"
+            size="icon"
+            asChild
+            className="hidden sm:inline-flex"
+          >
             <Link to="/items">
               <List className="h-5 w-5" />
               <span className="sr-only">商品一覧</span>

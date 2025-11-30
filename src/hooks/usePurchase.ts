@@ -27,7 +27,7 @@ export function usePurchase() {
         alert(
           `購入に失敗しました: ${error.response?.data?.detail || error.message}`,
         );
-      }else{
+      } else {
         alert("予期せぬエラーが発生しました。");
       }
     },

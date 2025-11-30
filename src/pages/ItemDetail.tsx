@@ -37,7 +37,8 @@ export function ItemDetail() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [commentBody, setCommentBody] = useState("");
 
-  const { likeCount, isLiked, toggleLike, isLikeProcessing } = useItemLike(itemId);
+  const { likeCount, isLiked, toggleLike, isLikeProcessing } =
+    useItemLike(itemId);
 
   const {
     data: item,
@@ -66,12 +67,16 @@ export function ItemDetail() {
     "未使用に近い",
     "目立った傷や汚れなし",
     "やや傷や汚れあり",
-    "全体的に状態が悪い"
+    "全体的に状態が悪い",
   ];
 
   const handleLikeClick = () => {
     if (!isLoggedIn) {
-      if (window.confirm("いいねをするにはログインが必要です。ログインページに移動しますか？")) {
+      if (
+        window.confirm(
+          "いいねをするにはログインが必要です。ログインページに移動しますか？",
+        )
+      ) {
         navigate("/login");
       }
       return;
@@ -156,10 +161,11 @@ export function ItemDetail() {
                     {item.images.map((_, index) => (
                       <button
                         key={index}
-                        className={`h-2 w-2 rounded-full transition-all ${index === currentImageIndex
+                        className={`h-2 w-2 rounded-full transition-all ${
+                          index === currentImageIndex
                             ? "bg-white w-6"
                             : "bg-white/50"
-                          }`}
+                        }`}
                         onClick={() => setCurrentImageIndex(index)}
                       />
                     ))}
@@ -172,10 +178,11 @@ export function ItemDetail() {
                 <button
                   key={image.id}
                   onClick={() => setCurrentImageIndex(index)}
-                  className={`aspect-square rounded-md overflow-hidden border-2 transition-all ${index === currentImageIndex
+                  className={`aspect-square rounded-md overflow-hidden border-2 transition-all ${
+                    index === currentImageIndex
                       ? "border-primary"
                       : "border-transparent hover:border-border"
-                    }`}
+                  }`}
                 >
                   <img
                     src={image.image_url || "/placeholder.svg"}
@@ -283,7 +290,9 @@ export function ItemDetail() {
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Heart className={`h-4 w-4 ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
+                  <Heart
+                    className={`h-4 w-4 ${isLiked ? "fill-red-500 text-red-500" : ""}`}
+                  />
                   <span>{likeCount}</span>
                   <MessageCircle className="h-4 w-4 ml-2" />
                   <span>{commentsQuery.data?.length || 0}</span>
@@ -294,7 +303,9 @@ export function ItemDetail() {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">商品の状態</span>
-                    <Badge variant="secondary">{conditionNames[item.condition - 1]}</Badge>
+                    <Badge variant="secondary">
+                      {conditionNames[item.condition - 1]}
+                    </Badge>
                   </div>
                 </div>
 
@@ -312,15 +323,18 @@ export function ItemDetail() {
                       <Link to={`/items/${item.id}/purchase`}>購入する</Link>
                     </Button>
                     <div className="grid grid-cols-2 gap-2">
-                      
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={handleLikeClick}
                         disabled={isLikeProcessing}
-                        className={isLiked ? "text-red-600 border-red-200 bg-red-50" : ""} // Optional styling enhancement
+                        className={
+                          isLiked ? "text-red-600 border-red-200 bg-red-50" : ""
+                        } // Optional styling enhancement
                       >
-                        <Heart className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`} />
+                        <Heart
+                          className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`}
+                        />
                         {isLiked ? "いいね済み" : "いいね"}
                       </Button>
                       <Button variant="outline" size="sm">
