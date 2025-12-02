@@ -1,5 +1,3 @@
-// src/pages/OrderDetail.tsx
-
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useOrder, useOrderPartner } from "../hooks/useOrderDetail";
 import { useAuth } from "../contexts/Auth";
@@ -22,18 +20,17 @@ export function OrderDetail() {
   const { id: orderId } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // 1.
   const { user: currentUser } = useAuth();
   const { data: order, isLoading: isLoadingOrder } = useOrder(orderId);
-  const { data: partner, isLoading: isLoadingPartner } = useOrderPartner(
-    order,
-    currentUser?.id,
-  );
+  const { 
+    data: partner, 
+    isLoading: isLoadingPartner, 
+    isError: isPartnerError 
+  } = useOrderPartner(order, currentUser?.id);
 
   if (isLoadingOrder || (isLoadingPartner && order)) return <FullPageLoader />;
   if (!order) return <div>取引が見つかりません。</div>;
 
-  // 2.
   const total = order.item.price;
   const isPurchase = order.buyer_id === currentUser?.id;
 
@@ -83,15 +80,7 @@ export function OrderDetail() {
               </Link>
             </div>
 
-            {/*       <div>
-       <h3 className="font-semibold mb-3 flex items-center gap-2">
-        <MapPin className="h-4 w-4" />
-        配送先
-       </h3>
-       
-      </div>
-      <Separator />
-            */}
+            <Separator />
 
             {/* Payment */}
             <div>
@@ -122,15 +111,19 @@ export function OrderDetail() {
             <CardTitle>{isPurchase ? "出品者情報" : "購入者情報"}</CardTitle>
           </CardHeader>
           <CardContent>
+            {/* ▼ 修正: パートナー表示ロジック */}
             {partner ? (
               <Link
                 to={`/users/${partner.id}`}
                 className="flex items-center gap-3 hover:opacity-80 transition-opacity mb-4"
               >
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={"/placeholder.svg"} />
+                <Avatar className="h-12 w-12 border">
+                  <AvatarImage 
+                    src={partner.icon_url || "/placeholder.svg"} 
+                    className="object-cover"
+                  />
                   <AvatarFallback>
-                    {(partner.username || partner.email)[0]}
+                    {(partner.username || partner.email)[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
@@ -139,10 +132,26 @@ export function OrderDetail() {
                   </p>
                 </div>
               </Link>
+            ) : isPartnerError ? (
+              /* 退会済みユーザーの場合 */
+              <div className="flex items-center gap-3 mb-4 opacity-60">
+                 <Avatar className="h-12 w-12 border">
+                   <AvatarFallback>?</AvatarFallback>
+                 </Avatar>
+                 <div className="flex-1">
+                   <p className="font-semibold text-muted-foreground">退会済みユーザー</p>
+                 </div>
+              </div>
             ) : (
-              <p>取引相手の情報を読み込み中...</p>
+              <p className="text-sm text-muted-foreground mb-4">読み込み中...</p>
             )}
-            <Button variant="outline" className="w-full bg-transparent">
+
+            {/* 相手が存在する場合のみメッセージボタンを表示 */}
+            <Button 
+              variant="outline" 
+              className="w-full bg-transparent" 
+              disabled={!partner}
+            >
               <MessageCircle className="h-4 w-4 mr-2" />
               メッセージを送る
             </Button>

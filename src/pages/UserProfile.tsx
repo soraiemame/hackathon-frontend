@@ -12,22 +12,24 @@ import { FullPageLoader } from "../components/ui/full-page-loader";
 export function UserProfile() {
   const { id: userId } = useParams<{ id: string }>();
 
-  // 1.
   const { data: user, isLoading: isLoadingUser } = useUser(userId);
   const { data: items, isLoading: isLoadingItems } = useUserItems(userId);
 
   if (isLoadingUser || isLoadingItems) return <FullPageLoader />;
   if (!user) return <div>ユーザーが見つかりません。</div>;
 
-  // 2.
   return (
     <div className="container px-4 py-8 md:px-6">
       {/* Profile Header */}
       <Card className="mb-8">
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-6 items-start">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={"/placeholder.svg"} />
+            <Avatar className="h-24 w-24 border">
+              {/* ▼ 修正: user.icon_url を使用 */}
+              <AvatarImage 
+                src={user.icon_url || "/placeholder.svg"} 
+                className="object-cover"
+              />
               <AvatarFallback>
                 {(user.username || user.email)[0].toUpperCase()}
               </AvatarFallback>
@@ -64,6 +66,7 @@ export function UserProfile() {
               id={item.id}
               name={item.name}
               price={item.price}
+              // ▼ 修正: プロパティ名を統一 (image -> imageUrl)
               image={item.images[0]?.image_url}
             />
           ))}

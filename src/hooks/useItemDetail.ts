@@ -3,6 +3,7 @@ import apiClient from "../api/client";
 import type { Item } from "../types/item";
 import type { Comment, CommentCreate } from "../types/comment";
 import type { User } from "../types/user";
+import axios from "axios";
 
 // --- API (変更なし)
 async function fetchItem(itemId: string): Promise<Item> {
@@ -66,6 +67,12 @@ export function useItemSeller(item: Item | undefined) {
     // queryFnは enabled: true の時（itemが存在する時）しか実行されない
     queryFn: () => fetchUser(item!.seller_id),
     enabled: !!item, // itemが存在する場合のみクエリを実行
+    retry: (failureCount, error) => {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+            return false; // 404なら即座に諦める（エラーにする）
+        }
+        return failureCount < 3; // それ以外なら3回まで粘る
+    }
   });
 }
 

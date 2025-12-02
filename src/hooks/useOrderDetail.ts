@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import apiClient from "../api/client";
 import type { Order } from "../types/order";
 import type { User } from "../types/user";
+import axios from "axios";
 
 // --- API
 async function fetchOrder(orderId: string): Promise<Order> {
@@ -42,5 +43,11 @@ export function useOrderPartner(
     queryKey: ["userProfile", partnerId],
     queryFn: () => fetchUser(partnerId!),
     enabled: !!partnerId,
+    retry: (failureCount, error) => {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+            return false; // 404なら即座に諦める（エラーにする）
+        }
+        return failureCount < 3; // それ以外なら3回まで粘る
+    }
   });
 }

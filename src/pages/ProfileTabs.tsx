@@ -13,7 +13,13 @@ import {
 } from "../components/ui/tabs";
 import { Badge } from "../components/ui/badge";
 import { ItemCard } from "../components/item-card";
-import { Settings, LogOut } from "lucide-react";
+import { LogOut, Trash2 } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import apiClient from "../api/client";
+
+async function deleteAccount(): Promise<void> {
+  await apiClient.delete(`/api/users/me`);
+}
 
 interface ProfileTabsProps {
   user: User | undefined;
@@ -28,6 +34,27 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
   const handleLogout = () => {
     auth.logout();
     navigate("/");
+  };
+  const deleteMutation = useMutation({
+    mutationFn: deleteAccount,
+    onSuccess: () => {
+      alert("アカウントを削除しました。");
+      auth.logout();
+      navigate("/");
+    },
+    onError: () => {
+      alert("アカウントの削除に失敗しました。");
+    },
+  });
+  const handleDeleteAccount = () => {
+    if (!user) return;
+    if (
+      window.confirm(
+        "本当にアカウントを削除しますか？\nこの操作は取り消せません。出品した商品もすべて削除されます。"
+      )
+    ) {
+      deleteMutation.mutate();
+    }
   };
 
   return (
@@ -111,23 +138,6 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
       <TabsContent value="settings" className="space-y-4">
         <h2 className="text-xl font-semibold">設定</h2>
         <div className="space-y-3">
-          {/* ここのonclickの編集 */}
-          <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Settings className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <h3 className="font-medium">アカウント設定</h3>
-                    <p className="text-sm text-muted-foreground">
-                      プロフィール情報の編集（上部のボタンから）
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
             <CardContent className="pt-6">
               <div
@@ -138,6 +148,26 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
                   <LogOut className="h-5 w-5 text-destructive" />
                   <div>
                     <h3 className="font-medium text-destructive">ログアウト</h3>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card
+            className="hover:bg-red-50 transition-colors cursor-pointer border-red-200"
+            onClick={handleDeleteAccount}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Trash2 className="h-5 w-5 text-destructive" />
+                  <div>
+                    <h3 className="font-medium text-destructive">
+                      {deleteMutation.isPending ? "削除中..." : "アカウント削除"}
+                    </h3>
+                    <p className="text-sm text-destructive/80">
+                      退会し、すべてのデータを削除します
+                    </p>
                   </div>
                 </div>
               </div>
