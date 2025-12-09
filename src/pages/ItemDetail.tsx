@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/Auth";
 
@@ -28,6 +28,7 @@ import {
   X,
 } from "lucide-react";
 import { FullPageLoader } from "../components/ui/full-page-loader";
+import { useCategories } from "../hooks/useCategory";
 
 export function ItemDetail() {
   const { id: itemId } = useParams<{ id: string }>();
@@ -114,6 +115,11 @@ export function ItemDetail() {
   };
 
   const isOwner = isLoggedIn && currentUser?.id === item?.seller_id;
+  const { data: categories } = useCategories();
+  const categoryData = useMemo(() => {
+      if (!item || !categories) return null;
+      return categories.find(c => c.id === item.category_id);
+  }, [item, categories]);
 
   if (isLoadingItem || commentsQuery.isLoading || (isLoadingSeller && item)) {
     return <FullPageLoader />;
@@ -304,6 +310,25 @@ export function ItemDetail() {
           <div className="sticky top-20 space-y-4">
             <Card>
               <CardContent className="pt-6 space-y-4">
+                {categoryData && (
+                  <div className="flex items-center flex-wrap gap-1 text-xs text-muted-foreground">
+                    <Link to="/" className="hover:underline hover:text-primary">
+                      Home
+                    </Link>
+                    <ChevronRight className="h-3 w-3" />
+                    <span className="hover:underline hover:text-primary cursor-pointer">
+                      {categoryData.c0_name_jp}
+                    </span>
+                    <ChevronRight className="h-3 w-3" />
+                    <span className="hover:underline hover:text-primary cursor-pointer">
+                      {categoryData.c1_name_jp}
+                    </span>
+                    <ChevronRight className="h-3 w-3" />
+                    <span className="font-medium text-foreground">
+                      {categoryData.c2_name_jp}
+                    </span>
+                  </div>
+                )}
                 <div>
                   <h1 className="text-2xl font-bold mb-2">{item.name}</h1>
                   <p className="text-3xl font-bold text-primary">

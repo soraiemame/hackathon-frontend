@@ -23,4 +23,6 @@ export interface Item extends ItemBase {
   created_at: string;
   images: ItemImage[];
   is_deleted: boolean;
+  like_count: number;
+  category_id: number;
 }
