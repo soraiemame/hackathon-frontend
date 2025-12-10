@@ -6,6 +6,9 @@ import type { Item } from '../types/item';
 export interface UseItemsParams {
   sortBy?: string;      // "new", "price-low", "popular" など
   categoryId?: number;  // カテゴリーID
+  search?: string; // 検索するための文字列
+  minPrice?: number;  // 下限価格
+  maxPrice?: number;  // 上限価格
 }
 
 // API呼び出し関数
@@ -21,6 +24,15 @@ async function fetchItems(params: UseItemsParams): Promise<Item[]> {
   if (params.categoryId) {
       queryParams.category_id = params.categoryId;
   }
+
+  if (params.search) {
+      queryParams.search = params.search;
+  }
+
+  // ▼▼▼ 追加: 価格範囲 ▼▼▼
+  // (バックエンドが min_price / max_price に対応している必要があります)
+  if (params.minPrice !== undefined) queryParams.min_price = params.minPrice;
+  if (params.maxPrice !== undefined) queryParams.max_price = params.maxPrice;
 
   // 3. APIリクエスト (クエリパラメータ付き)
   const { data } = await apiClient.get('/api/items', {
