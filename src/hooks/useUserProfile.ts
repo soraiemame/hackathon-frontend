@@ -5,6 +5,7 @@ import apiClient from "../api/client";
 import type { User } from "../types/user";
 import type { Item } from "../types/item";
 import axios from "axios";
+import type { Like } from "../types/like";
 
 // --- API
 async function fetchUser(userId: string): Promise<User> {
@@ -16,6 +17,11 @@ async function fetchUserItems(userId: string): Promise<Item[]> {
   const { data } = await apiClient.get("/api/items", {
     params: { seller_id: userId },
   });
+  return data;
+}
+
+async function fetchMyLikes(): Promise<Like[]> {
+  const { data } = await apiClient.get('/api/users/me/likes');
   return data;
 }
 
@@ -46,5 +52,13 @@ export function useUserItems(userId: string | undefined) {
         }
         return failureCount < 3; // それ以外なら3回まで粘る
     }
+  });
+}
+
+export function useMyLikes(enabled: boolean) {
+  return useQuery({
+    queryKey: ['myLikes'],
+    queryFn: fetchMyLikes,
+    enabled: enabled, // マイページの時だけ有効にする
   });
 }

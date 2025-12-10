@@ -8,7 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { FullPageLoader } from "../components/ui/full-page-loader";
 
+import { useRecommendations } from "../hooks/useRecommendations"; // ▼ 追加
+import { useAuth } from "../contexts/Auth"; // ▼ 追加
+import { Sparkles } from "lucide-react";
+
 export function ItemList() {
+  const { isLoggedIn, user } = useAuth();
   // --- 1. 状態管理 ---
   const [activeTab, setActiveTab] = useState("new"); 
 
@@ -19,7 +24,7 @@ export function ItemList() {
 
   // --- 2. データ取得 & ロジック ---
   const { data: categories } = useCategories();
-  
+  const { data: recommendedItems, isLoading: isLoadingRec } = useRecommendations(isLoggedIn);
   // APIに送るカテゴリーIDを決定
   const targetCategoryId = useMemo(() => {
       // C2（小カテゴリ）のvalueにはIDが入っているので、数値化して返す
@@ -113,11 +118,37 @@ export function ItemList() {
       setSelectedC2("all"); // 子をリセット
   };
 
-  if (isLoading) return <FullPageLoader />;
+  if (isLoading || isLoadingRec) return <FullPageLoader />;
 
   return (
     <div className="container px-4 py-8 md:px-6">
       <div className="flex flex-col gap-6">
+        {isLoggedIn && recommendedItems && recommendedItems.length > 0 && (
+          <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+              <h2 className="text-xl font-bold">
+                {user?.username ? `${user.username}さんへの` : ""}おすすめ
+              </h2>
+            </div>
+            
+            {/* 横スクロールエリア */}
+            <div className="relative">
+              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
+                {recommendedItems.map((item) => (
+                  <div key={item.id} className="min-w-[160px] w-[160px] sm:min-w-[200px] sm:w-[200px] snap-start">
+                    <ItemCard
+                      id={item.id}
+                      name={item.name}
+                      price={item.price}
+                      image={item.images[0]?.image_url}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
         <div className="flex flex-col gap-4">
           <h1 className="text-3xl font-bold">商品一覧</h1>
           
@@ -126,7 +157,6 @@ export function ItemList() {
               
               {/* ソートタブ */}
               <TabsList className="w-full sm:w-auto justify-start overflow-x-auto">
-                <TabsTrigger value="recommended">おすすめ</TabsTrigger> 
                 <TabsTrigger value="new">新着</TabsTrigger>
                 <TabsTrigger value="popular">人気</TabsTrigger>
                 <TabsTrigger value="cheap">価格が安い順</TabsTrigger>

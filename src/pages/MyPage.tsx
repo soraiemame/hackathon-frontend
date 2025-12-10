@@ -5,7 +5,6 @@ import type { Order } from "../types/order";
 import type { Item } from "../types/item";
 import { useAuth } from "../contexts/Auth";
 
-//
 import { ProfileHeader } from "./ProfileHeader";
 import { ProfileTabs } from "./ProfileTabs";
 import { FullPageLoader } from "../components/ui/full-page-loader";

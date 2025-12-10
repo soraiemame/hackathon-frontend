@@ -3,6 +3,8 @@ import { useAuth } from "../contexts/Auth";
 import type { User } from "../types/user";
 import type { Order } from "../types/order";
 import type { Item } from "../types/item";
+import { useMyLikes } from "../hooks/useUserProfile";
+
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import {
@@ -13,7 +15,7 @@ import {
 } from "../components/ui/tabs";
 import { Badge } from "../components/ui/badge";
 import { ItemCard } from "../components/item-card";
-import { LogOut, Trash2 } from "lucide-react";
+import { Heart, LogOut, Trash2 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import apiClient from "../api/client";
 
@@ -28,8 +30,11 @@ interface ProfileTabsProps {
 }
 
 export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
+  const { user: currentUser } = useAuth();
   const auth = useAuth();
   const navigate = useNavigate();
+  const isOwnProfile = currentUser && user && currentUser.id === user.id;
+  const { data: likes, isLoading: isLoadingLikes } = useMyLikes(!!isOwnProfile);
 
   const handleLogout = () => {
     auth.logout();
@@ -59,10 +64,11 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
 
   return (
     <Tabs defaultValue="listings" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-3 max-w-md">
+      <TabsList className={`grid w-full max-w-xl ${isOwnProfile ? "grid-cols-4" : "grid-cols-2"}`}>
         <TabsTrigger value="listings">出品中</TabsTrigger>
+        {isOwnProfile && <TabsTrigger value="likes">いいね</TabsTrigger>}
         <TabsTrigger value="orders">取引履歴</TabsTrigger>
-        <TabsTrigger value="settings">設定</TabsTrigger>
+        {isOwnProfile && <TabsTrigger value="settings">設定</TabsTrigger>}
       </TabsList>
 
       {/* Listings Tab */}
@@ -86,6 +92,34 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
           {listings?.length === 0 && <p>出品中の商品はありません。</p>}
         </div>
       </TabsContent>
+
+      {isOwnProfile && (
+        <TabsContent value="likes" className="space-y-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Heart className="h-5 w-5 text-red-500 fill-red-500" />
+                いいねした商品
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {likes?.map((like) => (
+                <ItemCard
+                key={like.item.id}
+                id={like.item.id}
+                name={like.item.name}
+                price={like.item.price}
+                image={like.item.images[0]?.image_url}
+                />
+            ))}
+            {!isLoadingLikes && likes?.length === 0 && (
+                <div className="col-span-full text-center py-8 text-muted-foreground">
+                    <p>いいねした商品はまだありません。</p>
+                    <Button variant="link" asChild className="mt-2">
+                        <Link to="/items">商品を探す</Link>
+                    </Button>
+                </div>
+            )}
+            </div>
+        </TabsContent>
+      )}
 
       {/* Orders Tab */}
       <TabsContent value="orders" className="space-y-4">
