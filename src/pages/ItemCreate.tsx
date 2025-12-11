@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { X, Upload } from "lucide-react";
+import { CategorySelector } from "../components/category-selector";
 
 export function ItemCreate() {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ export function ItemCreate() {
   const [description, setDescription] = useState("");
   const [condition, setCondition] = useState("1");
   const [files, setFiles] = useState<File[]>([]);
+  const [categoryId, setCategoryId] = useState<number>();
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,11 +74,16 @@ export function ItemCreate() {
       alert("画像を1枚以上選択してください。");
       return;
     }
+    if (!categoryId) {
+      alert("カテゴリーを小カテゴリーまで選択してください。");
+      return;
+    }
 
     // 3.
     createItem({
       name,
       price,
+      category_id: categoryId,
       description,
       condition: Number(condition),
       files,
@@ -169,6 +176,13 @@ export function ItemCreate() {
                 onChange={(e) => setDescription(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">1000文字以内</p>
+            </div>
+            <div className="space-y-2">
+              <Label>カテゴリー *</Label>
+              <CategorySelector onChange={setCategoryId} />
+              <p className="text-xs text-muted-foreground">
+                大・中・小カテゴリーを順に選択してください
+              </p>
             </div>
             <div className="space-y-2">
               <Label>商品の状態 *</Label>

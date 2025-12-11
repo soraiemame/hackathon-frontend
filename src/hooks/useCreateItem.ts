@@ -43,6 +43,7 @@ interface CreateItemVariables {
   price: number;
   description: string;
   condition: number;
+  category_id: number;
   files: File[];
 }
 
@@ -70,6 +71,7 @@ export function useCreateItem() {
         price: vars.price,
         description: vars.description,
         condition: vars.condition,
+        category_id: vars.category_id,
         image_keys: signedUrlResults.map((result) => result.fileKey),
       };
       console.log(itemData);

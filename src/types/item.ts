@@ -10,6 +10,7 @@ export interface ItemBase {
   description?: string;
   price: number;
   condition: number;
+  category_id: number;
 }
 
 export interface ItemCreate extends ItemBase {
@@ -24,5 +25,4 @@ export interface Item extends ItemBase {
   images: ItemImage[];
   is_deleted: boolean;
   like_count: number;
-  category_id: number;
 }

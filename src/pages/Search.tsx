@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useItemSearch } from "../hooks/useItemSearch";
+// import { useItemSearch } from "../hooks/useItemSearch";
 
 import { ItemCard } from "../components/item-card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { Slider } from "../components/ui/slider";
+// import { Slider } from "../components/ui/slider";
 import {
   Select,
   SelectContent,
