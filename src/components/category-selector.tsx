@@ -12,12 +12,14 @@ interface CategorySelectorProps {
   value?: number;
   onChange: (categoryId: number | undefined) => void;
   className?: string;
+  isVertical?: boolean;
 }
 
 export function CategorySelector({
   value,
   onChange,
   className,
+  isVertical = false
 }: CategorySelectorProps) {
   const { data: categories } = useCategories();
 
@@ -145,9 +147,18 @@ export function CategorySelector({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, categories]);
 
+  const containerLayout = isVertical 
+    ? "flex flex-col gap-4" 
+    : "flex flex-col gap-4 sm:flex-row";
+
+  // 縦並びモードなら "w-full" 固定、そうでなければ "sm:w-[200px]" (PCで幅固定) を適用
+  const itemWrapperClass = isVertical 
+    ? "w-full" 
+    : "w-full sm:w-[200px]";
+
   return (
-    <div className={`flex flex-col gap-4 sm:flex-row ${className}`}>
-      <div className="w-full sm:w-[200px]">
+    <div className={`${containerLayout} ${className || ""}`}>
+      <div className={itemWrapperClass}>
         <Select value={selectedC0} onValueChange={handleC0Change}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="大カテゴリー" />
@@ -163,7 +174,7 @@ export function CategorySelector({
         </Select>
       </div>
 
-      <div className="w-full sm:w-[200px]">
+      <div className={itemWrapperClass}>
         <Select
           key={selectedC0}
           value={selectedC1}
@@ -184,7 +195,7 @@ export function CategorySelector({
         </Select>
       </div>
 
-      <div className="w-full sm:w-[200px]">
+      <div className={itemWrapperClass}>
         <Select
           key={selectedC1}
           value={selectedC2}

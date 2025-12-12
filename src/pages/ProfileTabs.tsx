@@ -92,6 +92,7 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
               name={item.name}
               price={item.price}
               image={item.images[0]?.image_url}
+              isSold={!item.selling}
             />
           ))}
           {listings?.length === 0 && <p>出品中の商品はありません。</p>}
@@ -112,6 +113,7 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
                 name={like.item.name}
                 price={like.item.price}
                 image={like.item.images[0]?.image_url}
+                isSold={!like.item.selling}
               />
             ))}
             {!isLoadingLikes && likes?.length === 0 && (

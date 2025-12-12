@@ -207,7 +207,7 @@ function FilterContent({
       <div className="space-y-2">
         <Label>カテゴリー</Label>
         {/* CategorySelector を縦積み (flex-col) で表示 */}
-        <CategorySelector onChange={setCategoryId} className="flex-col" />
+        <CategorySelector onChange={setCategoryId} className="flex-col" isVertical={true} />
       </div>
 
       {/* TODO: 価格絞り込み機能の実装 */}

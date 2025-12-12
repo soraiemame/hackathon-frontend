@@ -32,8 +32,6 @@ export function ItemList() {
     categoryId: targetCategoryId,
   });
 
-  // if (isLoading || isLoadingRec) return <FullPageLoader />;
-
   return (
     <div className="container px-4 py-8 md:px-6">
       <div className="flex flex-col gap-6">
@@ -59,6 +57,7 @@ export function ItemList() {
                       name={item.name}
                       price={item.price}
                       image={item.images[0]?.image_url}
+                      isSold={!item.selling}
                     />
                   </div>
                 ))}
@@ -106,6 +105,7 @@ export function ItemList() {
                       name={item.name}
                       price={item.price}
                       image={item.images[0]?.image_url}
+                      isSold={!item.selling}
                     />
                   ))}
                   {items?.length === 0 && (
