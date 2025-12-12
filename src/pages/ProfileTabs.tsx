@@ -18,6 +18,7 @@ import { ItemCard } from "../components/item-card";
 import { Heart, LogOut, Trash2 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import apiClient from "../api/client";
+import { toast } from "sonner";
 
 async function deleteAccount(): Promise<void> {
   await apiClient.delete(`/api/users/me`);
@@ -43,12 +44,12 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
   const deleteMutation = useMutation({
     mutationFn: deleteAccount,
     onSuccess: () => {
-      alert("アカウントを削除しました。");
+      toast.success("削除成功",{ description: "アカウントを削除しました。" });
       auth.logout();
       navigate("/");
     },
     onError: () => {
-      alert("アカウントの削除に失敗しました。");
+      toast.error("削除失敗",{ description: "アカウントの削除に失敗しました。" });
     },
   });
   const handleDeleteAccount = () => {

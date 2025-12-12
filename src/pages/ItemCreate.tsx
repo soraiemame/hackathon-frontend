@@ -8,6 +8,7 @@ import { useSuggestCategory } from "../hooks/useSuggestCategory";
 
 // v0/Shadcn UI
 import { Button } from "../components/ui/button";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -49,7 +50,9 @@ export function ItemCreate() {
   const handleSuggestCategory = async () => {
     // フロントエンド側での必須チェック
     if (!name || !description || files.length === 0) {
-      alert("AI提案を使用するには、商品名・商品説明・画像を少なくとも1枚設定してください。");
+      toast.error("入力エラー", {
+        description: "AI提案を使用するには、商品名・商品説明・画像を少なくとも1枚設定してください。",
+      });
       return;
     }
 
@@ -67,12 +70,17 @@ export function ItemCreate() {
 
       if (suggestedId) {
         console.log(suggestedId);
+        toast.success("AI提案完了", {
+          description: "カテゴリーが自動選択されました。",
+        });
         setCategoryId(suggestedId);
       }
     } catch (error) {
       // useMutationのエラーハンドリングはここ、またはonErrorコールバックで行えます
       console.error("AI提案エラー:", error);
-      alert("カテゴリーの提案に失敗しました。");
+      toast.error("提案失敗", {
+        description: "カテゴリーの提案に失敗しました。",
+      });
     }
   };
 
@@ -83,7 +91,7 @@ export function ItemCreate() {
       const totalFiles = files.length + newFiles.length;
 
       if (totalFiles > 10) {
-        alert("画像は最大10枚までです。");
+        toast.error("枚数制限", { description: "画像は最大10枚までです。" });
         return;
       }
 
@@ -104,11 +112,11 @@ export function ItemCreate() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (files.length === 0) {
-      alert("画像を1枚以上選択してください。");
+      toast.error("画像不足", { description: "画像を1枚以上選択してください。" });
       return;
     }
     if (!categoryId) {
-      alert("カテゴリーを小カテゴリーまで選択してください。");
+      toast.error("カテゴリー不備", { description: "小カテゴリーまで選択してください。" });
       return;
     }
 

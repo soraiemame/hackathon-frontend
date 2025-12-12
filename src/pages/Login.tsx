@@ -16,6 +16,7 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { ShoppingBag } from "lucide-react";
+import { toast } from "sonner";
 
 interface LoginResponse {
   access_token: string;
@@ -44,7 +45,7 @@ export function Login() {
       navigate("/users/me");
     },
     onError: () => {
-      alert("メールアドレスまたはパスワードが間違っています。");
+      toast.error("ログイン失敗",{ description: "メールアドレスまたはパスワードが間違っています。" })
     },
   });
 

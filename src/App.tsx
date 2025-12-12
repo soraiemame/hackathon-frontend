@@ -3,6 +3,7 @@ import { useAuth } from "./contexts/Auth";
 
 import { Header } from "./components/header";
 import { Footer } from "./components/footer";
+import { Toaster } from "./components/ui/sonner";
 import { Home } from "./pages/Home";
 import { Register } from "./pages/Register";
 import { Login } from "./pages/Login";
@@ -78,6 +79,7 @@ function App() {
         </Routes>
       </main>
       <Footer />
+      <Toaster />
     </div>
   );
 }

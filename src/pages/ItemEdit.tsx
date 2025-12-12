@@ -25,6 +25,7 @@ import {
 } from "../components/ui/select";
 // ▼ 追加
 import { CategorySelector } from "../components/category-selector";
+import { toast } from "sonner";
 
 export function ItemEdit() {
   const { id: itemId } = useParams<{ id: string }>();
@@ -53,7 +54,7 @@ export function ItemEdit() {
     e.preventDefault();
     // ▼ 変更: undefined チェック
     if (!query.data || categoryId === undefined) {
-        alert("カテゴリーを選択してください");
+        toast.error("カテゴリー不備", { description: "小カテゴリーまで選択してください。" });
         return;
     };
 
@@ -84,7 +85,7 @@ export function ItemEdit() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label>商品画像（現在は編集できません）</Label>
+              <Label>商品画像（現在は編集できません） *</Label>
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
                 {query.data.images.map((image, index) => (
                   <div key={index} className="relative aspect-square">
@@ -99,7 +100,7 @@ export function ItemEdit() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="name">商品名</Label>
+              <Label htmlFor="name">商品名 *</Label>
               <Input
                 id="name"
                 value={name}
@@ -112,7 +113,7 @@ export function ItemEdit() {
 
             {/* ▼ 変更: CategorySelectorを使用 */}
             <div className="space-y-2">
-              <Label>カテゴリー</Label>
+              <Label>カテゴリー *</Label>
               {/* ▼ 修正点: 
                  1. key={categoryId} を削除（これがリセットの原因でした）
                  2. value={categoryId} を追加（これで初期値を渡します）
@@ -128,7 +129,7 @@ export function ItemEdit() {
 
             {/* 以下変更なし */}
             <div className="space-y-2">
-              <Label htmlFor="description">商品説明</Label>
+              <Label htmlFor="description">商品説明 *</Label>
               <Textarea
                 id="description"
                 rows={8}

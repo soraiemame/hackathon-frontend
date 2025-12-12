@@ -19,6 +19,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Checkbox } from "../components/ui/checkbox";
 import { ShoppingBag } from "lucide-react";
+import { toast } from "sonner";
 
 //
 async function registerUser(vars: {
@@ -47,17 +48,18 @@ export function Register() {
   const mutation = useMutation({
     mutationFn: registerUser,
     onSuccess: () => {
-      alert("登録が完了しました。ログインページに移動します。");
+      toast.success("登録完了",{"description": "登録が完了しました。ログインページに移動します。"});
       navigate("/login");
     },
     onError: (error: unknown) => {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 409) {
-          alert("このメールアドレスは既に使用されています。");
+          toast.error("登録失敗",{"description": "このメールアドレスは既に使用されています。"});
         } else {
-          alert(`登録に失敗しました: ${error.message}`);
+          toast.error("登録失敗",{"description": `登録に失敗しました: ${error.message}`});
         }
       } else {
+        // ここは残しておいてもいいだろ
         alert("予期せぬエラーが発生しました。");
       }
     },
@@ -67,11 +69,11 @@ export function Register() {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      alert("パスワードが一致しません。");
+      toast.error("登録失敗",{"description": "パスワードが一致しません。"});
       return;
     }
     if (!terms) {
-      alert("利用規約に同意してください。");
+      toast.error("登録失敗",{"description": "利用規約に同意してください。"});
       return;
     }
 
