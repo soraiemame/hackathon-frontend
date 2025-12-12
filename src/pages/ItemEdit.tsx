@@ -45,7 +45,7 @@ export function ItemEdit() {
       setName(query.data.name);
       setPrice(query.data.price);
       setDescription(query.data.description || "");
-      // ▼ 追加: 既存のカテゴリーIDをセット
+      setCondition(String(query.data.condition));
       setCategoryId(query.data.category_id);
     }
   }, [query.data]);
