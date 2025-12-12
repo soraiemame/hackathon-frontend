@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import type { ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCreateItem } from "../hooks/useCreateItem"; //
+import { useSuggestCategory } from "../hooks/useSuggestCategory";
 
 // v0/Shadcn UI
 import { Button } from "../components/ui/button";
@@ -24,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { X, Upload } from "lucide-react";
+import { X, Upload, Sparkles } from "lucide-react";
 import { CategorySelector } from "../components/category-selector";
 
 export function ItemCreate() {
@@ -42,6 +43,38 @@ export function ItemCreate() {
 
   // 2.
   const { createItem, isLoading } = useCreateItem();
+  const { mutateAsync: suggest, isPending: isSuggesting } = useSuggestCategory();
+
+  // --- ハンドラー: AIカテゴリー提案 ---
+  const handleSuggestCategory = async () => {
+    // フロントエンド側での必須チェック
+    if (!name || !description || files.length === 0) {
+      alert("AI提案を使用するには、商品名・商品説明・画像を少なくとも1枚設定してください。");
+      return;
+    }
+
+    // 1枚目の画像を取得
+    const mainImage = files[0];
+
+    try {
+      // APIコール
+      // useMutationの場合、引数はオブジェクトで渡す形に定義したので、ここも合わせます
+      const suggestedId = await suggest({
+        title: name,
+        description: description,
+        image: mainImage
+      });
+
+      if (suggestedId) {
+        console.log(suggestedId);
+        setCategoryId(suggestedId);
+      }
+    } catch (error) {
+      // useMutationのエラーハンドリングはここ、またはonErrorコールバックで行えます
+      console.error("AI提案エラー:", error);
+      alert("カテゴリーの提案に失敗しました。");
+    }
+  };
 
   //
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -178,8 +211,28 @@ export function ItemCreate() {
               <p className="text-xs text-muted-foreground">1000文字以内</p>
             </div>
             <div className="space-y-2">
-              <Label>カテゴリー *</Label>
-              <CategorySelector onChange={setCategoryId} />
+              <div className="flex items-center justify-between">
+                <Label>カテゴリー *</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSuggestCategory}
+                  // 画像、名前、説明のいずれかが欠けている、または通信中は無効化
+                  disabled={isSuggesting || !name || !description || files.length === 0}
+                  className="text-primary hover:text-primary/80 h-8"
+                >
+                  {isSuggesting ? (
+                    "解析中..."
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      AIで提案
+                    </>
+                  )}
+                </Button>
+              </div>
+              <CategorySelector value={categoryId} onChange={setCategoryId} />
               <p className="text-xs text-muted-foreground">
                 大・中・小カテゴリーを順に選択してください
               </p>

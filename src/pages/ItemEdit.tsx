@@ -23,6 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
+// ▼ 追加
+import { CategorySelector } from "../components/category-selector";
 
 export function ItemEdit() {
   const { id: itemId } = useParams<{ id: string }>();
@@ -34,24 +36,34 @@ export function ItemEdit() {
   const [price, setPrice] = useState(0);
   const [description, setDescription] = useState("");
   const [condition, setCondition] = useState("1");
+  // ▼ 変更: 初期値はundefinedにしておく
+  const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     if (query.data) {
       setName(query.data.name);
       setPrice(query.data.price);
       setDescription(query.data.description || "");
+      // ▼ 追加: 既存のカテゴリーIDをセット
+      setCategoryId(query.data.category_id);
     }
   }, [query.data]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.data) return;
+    // ▼ 変更: undefined チェック
+    if (!query.data || categoryId === undefined) {
+        alert("カテゴリーを選択してください");
+        return;
+    };
 
     const updatedData: ItemCreate = {
       name: name,
       price: price,
+      category_id: categoryId, // ▼ 変更: Stateの値を使用
       description: description,
       condition: Number(condition),
+      // 画像は変更しないので既存のものを送信
       image_keys: query.data.images.map((img) => img.image_key),
     };
     mutation.mutate({ itemId: itemId!, data: updatedData });
@@ -73,7 +85,6 @@ export function ItemEdit() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label>商品画像（現在は編集できません）</Label>
-
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
                 {query.data.images.map((image, index) => (
                   <div key={index} className="relative aspect-square">
@@ -99,9 +110,25 @@ export function ItemEdit() {
               <p className="text-xs text-muted-foreground">40文字以内</p>
             </div>
 
+            {/* ▼ 変更: CategorySelectorを使用 */}
+            <div className="space-y-2">
+              <Label>カテゴリー</Label>
+              {/* ▼ 修正点: 
+                 1. key={categoryId} を削除（これがリセットの原因でした）
+                 2. value={categoryId} を追加（これで初期値を渡します）
+              */}
+              <CategorySelector 
+                value={categoryId} 
+                onChange={setCategoryId} 
+              />
+              <p className="text-xs text-muted-foreground">
+                変更する場合は選択し直してください
+              </p>
+            </div>
+
+            {/* 以下変更なし */}
             <div className="space-y-2">
               <Label htmlFor="description">商品説明</Label>
-
               <Textarea
                 id="description"
                 rows={8}
@@ -110,9 +137,9 @@ export function ItemEdit() {
                 required
                 maxLength={1000}
               />
-
               <p className="text-xs text-muted-foreground">1000文字以内</p>
             </div>
+            
             <div className="space-y-2">
               <Label>商品の状態 *</Label>
               <Select value={condition} onValueChange={setCondition} required>
@@ -128,7 +155,6 @@ export function ItemEdit() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2"></div>
 
             <div className="space-y-2">
               <Label htmlFor="price">価格</Label>
@@ -136,7 +162,6 @@ export function ItemEdit() {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   ¥
                 </span>
-
                 <Input
                   id="price"
                   type="number"

@@ -312,10 +312,6 @@ export function ItemDetail() {
               <CardContent className="pt-6 space-y-4">
                 {categoryData && (
                   <div className="flex items-center flex-wrap gap-1 text-xs text-muted-foreground">
-                    <Link to="/" className="hover:underline hover:text-primary">
-                      Home
-                    </Link>
-                    <ChevronRight className="h-3 w-3" />
                     <span className="hover:underline hover:text-primary cursor-pointer">
                       {categoryData.c0_name_jp}
                     </span>
