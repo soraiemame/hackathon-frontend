@@ -6,6 +6,7 @@ import apiClient from "../api/client";
 import axios from "axios";
 import type { Item, ItemCreate } from "../types/item";
 import type { SignedUrlResponse } from "../types/storage";
+import { toast } from "sonner";
 
 // --- API Helper Functions ---
 
@@ -85,7 +86,7 @@ export function useCreateItem() {
     },
     onError: (error) => {
       console.error(error);
-      alert("出品に失敗しました。");
+      toast.error("出品失敗",{"description": "出品に失敗しました。"})
     },
   });
 

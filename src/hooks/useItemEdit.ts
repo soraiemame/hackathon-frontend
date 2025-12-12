@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../api/client";
 import type { Item, ItemCreate } from "../types/item";
+import { toast } from "sonner";
 
 // --- API
 async function fetchItem(itemId: string): Promise<Item> {
@@ -41,7 +42,7 @@ export function useItemEdit(itemId: string | undefined) {
       navigate(`/items/${updatedItem.id}`);
     },
     onError: () => {
-      alert("商品の更新に失敗しました。");
+      toast.error("更新失敗",{"description": "商品の更新に失敗しました。"});
     },
   });
 

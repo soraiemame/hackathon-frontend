@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../api/client";
 import { useAuth } from "../contexts/Auth";
 import type { Like } from "../types/like"; // 修正
+import { toast } from "sonner";
 
 // --- API ---
 
@@ -65,7 +66,7 @@ export function useItemLike(itemId: string | undefined) {
       queryClient.invalidateQueries({ queryKey: ["myLikes"] });
     },
     onError: () => {
-      alert("操作に失敗しました。");
+      toast.error("操作失敗",{"description": "いいねに失敗しました。"})
     },
   });
 

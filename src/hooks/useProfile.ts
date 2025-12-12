@@ -3,6 +3,7 @@ import apiClient from '../api/client';
 import axios from 'axios';
 import type { User, UserUpdate } from '../types/user';
 import type { SignedUrlResponse } from '../types/storage';
+import { toast } from 'sonner';
 
 async function getSignedUrl(file: File): Promise<{ uploadUrl: string, fileKey: string }> {
     const { data } = await apiClient.post<SignedUrlResponse>('/api/users/generate-signed-url', {
@@ -46,10 +47,10 @@ export function useProfileUpdate() {
         },
         onSuccess: (updatedUser) => {
             queryClient.setQueryData(['myProfile'], updatedUser);
-            alert("プロフィールを更新しました。");
+            toast.success("更新成功",{"description": "プロフィールを更新しました。"});
         },
         onError: () => {
-            alert("更新に失敗しました。");
+            toast.error("更新失敗",{"description": "更新に失敗しました。"});
         }
     });
 }

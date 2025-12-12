@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 import { FullPageLoader } from "../components/ui/full-page-loader";
 import { useCategories } from "../hooks/useCategory";
+import { toast } from "sonner";
+import { ConfirmDialog } from "../components/ui/confirm-dialog";
 
 export function ItemDetail() {
   const { id: itemId } = useParams<{ id: string }>();
@@ -39,6 +41,10 @@ export function ItemDetail() {
   const { isLoggedIn } = useAuth();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [commentBody, setCommentBody] = useState("");
+
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
+  const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
 
   // Hooks
   const { likeCount, isLiked, toggleLike, isLikeProcessing } = useItemLike(itemId);
@@ -75,9 +81,7 @@ export function ItemDetail() {
   // Handlers
   const handleLikeClick = () => {
     if (!isLoggedIn) {
-      if (window.confirm("いいねをするにはログインが必要です。ログインページに移動しますか？")) {
-        navigate("/login");
-      }
+      setShowLoginDialog(true);
       return;
     }
     toggleLike();
@@ -96,9 +100,30 @@ export function ItemDetail() {
   };
 
   const handleDeleteComment = (commentId: number) => {
-    if (window.confirm("本当にこのコメントを削除しますか？")) {
-      deleteComment({ itemId, commentId });
+    setCommentToDelete(commentId);
+  };
+  const executeDeleteComment = () => {
+    if (commentToDelete !== null) {
+      deleteComment(
+        { itemId, commentId: commentToDelete },
+        {
+          onSuccess: () => {
+             // 削除成功時にステートをリセット（自動でも閉じますが念のため）
+             setCommentToDelete(null);
+          }
+        }
+      );
     }
+  };
+
+  const handlePurchaseClick = () => {
+    // 未ログインならログイン誘導ダイアログを表示
+    if (!isLoggedIn) {
+      setShowLoginDialog(true);
+      return;
+    }
+    // ログイン済みなら購入確認ダイアログを表示
+    setShowPurchaseDialog(true);
   };
 
   const handlePreviousImage = () => {
@@ -126,7 +151,9 @@ export function ItemDetail() {
   }
 
   if (isErrorItem || !item) {
-    return <div>商品が見つかりません。</div>;
+    toast.error("無効な商品", {"description": "商品が見つかりませんでした。"})
+    navigate("/items");
+    return <div>商品が見つかりませんでした。</div>;
   }
 
   return (
@@ -372,10 +399,13 @@ export function ItemDetail() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <Button className="w-full" size="lg" asChild disabled={!item.selling}>
-                      <Link to={item.selling ? `/items/${item.id}/purchase` : "#"}>
-                        {item.selling ? "購入する" : "売り切れ"}
-                      </Link>
+                    <Button 
+                      className="w-full" 
+                      size="lg" 
+                      disabled={!item.selling}
+                      onClick={handlePurchaseClick}
+                    >
+                      {item.selling ? "購入する" : "売り切れ"}
                     </Button>
                     <div className="grid grid-cols-2 gap-2">
                       <Button 
@@ -465,6 +495,40 @@ export function ItemDetail() {
           </div>
         </div>
       </div>
+      {/* ▼ 追加: ログイン誘導ダイアログ */}
+      <ConfirmDialog
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
+        title="ログインが必要です"
+        description={
+          <>
+            この機能を使うにはログインが必要です。<br />
+            ログインページに移動しますか？
+          </>
+        }
+        actionLabel="ログインする"
+        onAction={() => navigate("/login")}
+      />
+
+      {/* ▼ 追加: コメント削除確認ダイアログ */}
+      <ConfirmDialog
+        open={commentToDelete !== null}
+        onOpenChange={(open) => !open && setCommentToDelete(null)}
+        title="削除確認"
+        description="本当にこのコメントを削除しますか？この操作は取り消せません。"
+        actionLabel="削除する"
+        variant="destructive"
+        onAction={executeDeleteComment}
+      />
+
+      <ConfirmDialog
+        open={showPurchaseDialog}
+        onOpenChange={setShowPurchaseDialog}
+        title="購入の確認"
+        description="購入手続きに進みますか？"
+        actionLabel="手続きへ進む"
+        onAction={() => navigate(`/items/${itemId}/purchase`)}
+      />
     </div>
   );
 }

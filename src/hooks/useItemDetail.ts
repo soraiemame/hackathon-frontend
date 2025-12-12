@@ -4,6 +4,7 @@ import type { Item } from "../types/item";
 import type { Comment, CommentCreate } from "../types/comment";
 import type { User } from "../types/user";
 import axios from "axios";
+import { toast } from "sonner";
 
 // --- API (変更なし)
 async function fetchItem(itemId: string): Promise<Item> {
@@ -96,7 +97,7 @@ export function useItemComments(itemId: string | undefined) {
       }
     },
     onError: () => {
-      alert("コメントの投稿に失敗しました。");
+      toast.error("投稿失敗",{"description": "コメントの投稿に失敗しました。"});
     },
   });
 
@@ -108,7 +109,7 @@ export function useItemComments(itemId: string | undefined) {
       }
     },
     onError: () => {
-      alert("コメントの削除に失敗しました。");
+      toast.error("削除失敗",{"description": "コメントの削除に失敗しました。"});
     },
   });
 

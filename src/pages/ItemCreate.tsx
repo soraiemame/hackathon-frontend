@@ -5,6 +5,7 @@ import type { ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCreateItem } from "../hooks/useCreateItem"; //
 import { useSuggestCategory } from "../hooks/useSuggestCategory";
+import { useSuggestPrice } from "../hooks/useSuggestPrice";
 
 // v0/Shadcn UI
 import { Button } from "../components/ui/button";
@@ -45,6 +46,7 @@ export function ItemCreate() {
   // 2.
   const { createItem, isLoading } = useCreateItem();
   const { mutateAsync: suggest, isPending: isSuggesting } = useSuggestCategory();
+  const { mutateAsync: suggestPrice, isPending: isPriceSuggesting } = useSuggestPrice();
 
   // --- ハンドラー: AIカテゴリー提案 ---
   const handleSuggestCategory = async () => {
@@ -80,6 +82,40 @@ export function ItemCreate() {
       console.error("AI提案エラー:", error);
       toast.error("提案失敗", {
         description: "カテゴリーの提案に失敗しました。",
+      });
+    }
+  };
+
+  const handleSuggestPrice = async () => {
+    if (!name || !description || files.length === 0) {
+      toast.error("入力エラー", {
+        description: "AI提案を使用するには、商品名・商品説明・画像を少なくとも1枚設定してください。",
+      });
+      return;
+    }
+
+    const mainImage = files[0];
+
+    try {
+      const result = await suggestPrice({
+        title: name,
+        description: description,
+        condition: Number(condition),
+        image: mainImage,
+      });
+
+      if (result && result.suggested_price) {
+        setPrice(result.suggested_price);
+        
+        // 成功時に「理由」も一緒に表示してあげると親切です
+        toast.success("価格提案完了", {
+          description: `推定価格: ¥${result.suggested_price.toLocaleString()}`,
+        });
+      }
+    } catch (error) {
+      console.error("AI価格提案エラー:", error);
+      toast.error("提案失敗", {
+        description: "価格の提案に失敗しました。",
       });
     }
   };
@@ -261,8 +297,27 @@ export function ItemCreate() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="price">価格 *</Label>
-              Click to copy
+              <div className="flex items-center justify-between">
+                <Label htmlFor="price">価格 *</Label>
+                {/* ▼ 価格提案ボタンの追加 */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSuggestPrice}
+                  disabled={isPriceSuggesting || !name || !description || files.length === 0}
+                  className="text-primary hover:text-primary/80 h-8"
+                >
+                  {isPriceSuggesting ? (
+                    "解析中..."
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      相場を調べる
+                    </>
+                  )}
+                </Button>
+              </div>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   ¥

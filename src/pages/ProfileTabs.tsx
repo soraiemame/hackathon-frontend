@@ -19,6 +19,8 @@ import { Heart, LogOut, Trash2 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import apiClient from "../api/client";
 import { toast } from "sonner";
+import { ConfirmDialog } from "../components/ui/confirm-dialog";
+import { useState } from "react";
 
 async function deleteAccount(): Promise<void> {
   await apiClient.delete(`/api/users/me`);
@@ -37,6 +39,8 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
   const isOwnProfile = currentUser && user && currentUser.id === user.id;
   const { data: likes, isLoading: isLoadingLikes } = useMyLikes(!!isOwnProfile);
 
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   const handleLogout = () => {
     auth.logout();
     navigate("/");
@@ -44,23 +48,19 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
   const deleteMutation = useMutation({
     mutationFn: deleteAccount,
     onSuccess: () => {
-      toast.success("削除成功",{ description: "アカウントを削除しました。" });
+      toast.success("削除成功", { description: "アカウントを削除しました。" });
       auth.logout();
       navigate("/");
     },
     onError: () => {
-      toast.error("削除失敗",{ description: "アカウントの削除に失敗しました。" });
+      toast.error("削除失敗", { description: "アカウントの削除に失敗しました。" });
     },
   });
+
   const handleDeleteAccount = () => {
     if (!user) return;
-    if (
-      window.confirm(
-        "本当にアカウントを削除しますか？\nこの操作は取り消せません。出品した商品もすべて削除されます。"
-      )
-    ) {
-      deleteMutation.mutate();
-    }
+    // ▼ 修正: ダイアログを開くだけにする
+    setShowDeleteDialog(true);
   };
 
   return (
@@ -209,6 +209,20 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
             </CardContent>
           </Card>
         </div>
+        <ConfirmDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          title="アカウント削除確認"
+          description={
+            <>
+              本当にアカウントを削除しますか？<br />
+              この操作は取り消せません。出品した商品もすべて削除されます。
+            </>
+          }
+          actionLabel="削除する"
+          variant="destructive"
+          onAction={() => deleteMutation.mutate()}
+        />
       </TabsContent>
     </Tabs>
   );
