@@ -1,18 +1,18 @@
 // src/components/ui/sonner.tsx
 
-import { Toaster as Sonner } from "sonner"
+import { Toaster as Sonner } from "sonner";
 
-type ToasterProps = React.ComponentProps<typeof Sonner>
+type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const theme = "system"
+  const theme = "system";
 
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       // ▼ 追加: これを入れるだけで、success=緑, error=赤 になります
-      richColors 
+      richColors
       toastOptions={{
         classNames: {
           toast:
@@ -26,7 +26,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       {...props}
     />
-  )
-}
+  );
+};
 
-export { Toaster }
+export { Toaster };

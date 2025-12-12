@@ -69,11 +69,11 @@ export function useItemSeller(item: Item | undefined) {
     queryFn: () => fetchUser(item!.seller_id),
     enabled: !!item, // itemが存在する場合のみクエリを実行
     retry: (failureCount, error) => {
-        if (axios.isAxiosError(error) && error.response?.status === 404) {
-            return false; // 404なら即座に諦める（エラーにする）
-        }
-        return failureCount < 3; // それ以外なら3回まで粘る
-    }
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return false; // 404なら即座に諦める（エラーにする）
+      }
+      return failureCount < 3; // それ以外なら3回まで粘る
+    },
   });
 }
 
@@ -97,7 +97,9 @@ export function useItemComments(itemId: string | undefined) {
       }
     },
     onError: () => {
-      toast.error("投稿失敗",{"description": "コメントの投稿に失敗しました。"});
+      toast.error("投稿失敗", {
+        description: "コメントの投稿に失敗しました。",
+      });
     },
   });
 
@@ -109,7 +111,9 @@ export function useItemComments(itemId: string | undefined) {
       }
     },
     onError: () => {
-      toast.error("削除失敗",{"description": "コメントの削除に失敗しました。"});
+      toast.error("削除失敗", {
+        description: "コメントの削除に失敗しました。",
+      });
     },
   });
 

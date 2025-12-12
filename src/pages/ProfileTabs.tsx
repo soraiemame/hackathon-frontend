@@ -53,7 +53,9 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
       navigate("/");
     },
     onError: () => {
-      toast.error("削除失敗", { description: "アカウントの削除に失敗しました。" });
+      toast.error("削除失敗", {
+        description: "アカウントの削除に失敗しました。",
+      });
     },
   });
 
@@ -65,7 +67,9 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
 
   return (
     <Tabs defaultValue="listings" className="space-y-6">
-      <TabsList className={`grid w-full max-w-xl ${isOwnProfile ? "grid-cols-4" : "grid-cols-2"}`}>
+      <TabsList
+        className={`grid w-full max-w-xl ${isOwnProfile ? "grid-cols-4" : "grid-cols-2"}`}
+      >
         <TabsTrigger value="listings">出品中</TabsTrigger>
         {isOwnProfile && <TabsTrigger value="likes">いいね</TabsTrigger>}
         <TabsTrigger value="orders">取引履歴</TabsTrigger>
@@ -96,29 +100,29 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
 
       {isOwnProfile && (
         <TabsContent value="likes" className="space-y-4">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Heart className="h-5 w-5 text-red-500 fill-red-500" />
-                いいねした商品
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <Heart className="h-5 w-5 text-red-500 fill-red-500" />
+            いいねした商品
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {likes?.map((like) => (
-                <ItemCard
+              <ItemCard
                 key={like.item.id}
                 id={like.item.id}
                 name={like.item.name}
                 price={like.item.price}
                 image={like.item.images[0]?.image_url}
-                />
+              />
             ))}
             {!isLoadingLikes && likes?.length === 0 && (
-                <div className="col-span-full text-center py-8 text-muted-foreground">
-                    <p>いいねした商品はまだありません。</p>
-                    <Button variant="link" asChild className="mt-2">
-                        <Link to="/items">商品を探す</Link>
-                    </Button>
-                </div>
+              <div className="col-span-full text-center py-8 text-muted-foreground">
+                <p>いいねした商品はまだありません。</p>
+                <Button variant="link" asChild className="mt-2">
+                  <Link to="/items">商品を探す</Link>
+                </Button>
+              </div>
             )}
-            </div>
+          </div>
         </TabsContent>
       )}
 
@@ -198,7 +202,9 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
                   <Trash2 className="h-5 w-5 text-destructive" />
                   <div>
                     <h3 className="font-medium text-destructive">
-                      {deleteMutation.isPending ? "削除中..." : "アカウント削除"}
+                      {deleteMutation.isPending
+                        ? "削除中..."
+                        : "アカウント削除"}
                     </h3>
                     <p className="text-sm text-destructive/80">
                       退会し、すべてのデータを削除します
@@ -215,7 +221,8 @@ export function ProfileTabs({ user, orders, listings }: ProfileTabsProps) {
           title="アカウント削除確認"
           description={
             <>
-              本当にアカウントを削除しますか？<br />
+              本当にアカウントを削除しますか？
+              <br />
               この操作は取り消せません。出品した商品もすべて削除されます。
             </>
           }

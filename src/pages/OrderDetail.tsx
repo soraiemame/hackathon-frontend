@@ -22,10 +22,10 @@ export function OrderDetail() {
 
   const { user: currentUser } = useAuth();
   const { data: order, isLoading: isLoadingOrder } = useOrder(orderId);
-  const { 
-    data: partner, 
-    isLoading: isLoadingPartner, 
-    isError: isPartnerError 
+  const {
+    data: partner,
+    isLoading: isLoadingPartner,
+    isError: isPartnerError,
   } = useOrderPartner(order, currentUser?.id);
 
   if (isLoadingOrder || (isLoadingPartner && order)) return <FullPageLoader />;
@@ -118,8 +118,8 @@ export function OrderDetail() {
                 className="flex items-center gap-3 hover:opacity-80 transition-opacity mb-4"
               >
                 <Avatar className="h-12 w-12 border">
-                  <AvatarImage 
-                    src={partner.icon_url || "/placeholder.svg"} 
+                  <AvatarImage
+                    src={partner.icon_url || "/placeholder.svg"}
                     className="object-cover"
                   />
                   <AvatarFallback>
@@ -135,21 +135,25 @@ export function OrderDetail() {
             ) : isPartnerError ? (
               /* 退会済みユーザーの場合 */
               <div className="flex items-center gap-3 mb-4 opacity-60">
-                 <Avatar className="h-12 w-12 border">
-                   <AvatarFallback>?</AvatarFallback>
-                 </Avatar>
-                 <div className="flex-1">
-                   <p className="font-semibold text-muted-foreground">退会済みユーザー</p>
-                 </div>
+                <Avatar className="h-12 w-12 border">
+                  <AvatarFallback>?</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <p className="font-semibold text-muted-foreground">
+                    退会済みユーザー
+                  </p>
+                </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground mb-4">読み込み中...</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                読み込み中...
+              </p>
             )}
 
             {/* 相手が存在する場合のみメッセージボタンを表示 */}
-            <Button 
-              variant="outline" 
-              className="w-full bg-transparent" 
+            <Button
+              variant="outline"
+              className="w-full bg-transparent"
               disabled={!partner}
             >
               <MessageCircle className="h-4 w-4 mr-2" />

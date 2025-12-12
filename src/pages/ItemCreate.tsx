@@ -45,15 +45,18 @@ export function ItemCreate() {
 
   // 2.
   const { createItem, isLoading } = useCreateItem();
-  const { mutateAsync: suggest, isPending: isSuggesting } = useSuggestCategory();
-  const { mutateAsync: suggestPrice, isPending: isPriceSuggesting } = useSuggestPrice();
+  const { mutateAsync: suggest, isPending: isSuggesting } =
+    useSuggestCategory();
+  const { mutateAsync: suggestPrice, isPending: isPriceSuggesting } =
+    useSuggestPrice();
 
   // --- ハンドラー: AIカテゴリー提案 ---
   const handleSuggestCategory = async () => {
     // フロントエンド側での必須チェック
     if (!name || !description || files.length === 0) {
       toast.error("入力エラー", {
-        description: "AI提案を使用するには、商品名・商品説明・画像を少なくとも1枚設定してください。",
+        description:
+          "AI提案を使用するには、商品名・商品説明・画像を少なくとも1枚設定してください。",
       });
       return;
     }
@@ -67,7 +70,7 @@ export function ItemCreate() {
       const suggestedId = await suggest({
         title: name,
         description: description,
-        image: mainImage
+        image: mainImage,
       });
 
       if (suggestedId) {
@@ -89,7 +92,8 @@ export function ItemCreate() {
   const handleSuggestPrice = async () => {
     if (!name || !description || files.length === 0) {
       toast.error("入力エラー", {
-        description: "AI提案を使用するには、商品名・商品説明・画像を少なくとも1枚設定してください。",
+        description:
+          "AI提案を使用するには、商品名・商品説明・画像を少なくとも1枚設定してください。",
       });
       return;
     }
@@ -106,7 +110,7 @@ export function ItemCreate() {
 
       if (result && result.suggested_price) {
         setPrice(result.suggested_price);
-        
+
         // 成功時に「理由」も一緒に表示してあげると親切です
         toast.success("価格提案完了", {
           description: `推定価格: ¥${result.suggested_price.toLocaleString()}`,
@@ -148,11 +152,15 @@ export function ItemCreate() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (files.length === 0) {
-      toast.error("画像不足", { description: "画像を1枚以上選択してください。" });
+      toast.error("画像不足", {
+        description: "画像を1枚以上選択してください。",
+      });
       return;
     }
     if (!categoryId) {
-      toast.error("カテゴリー不備", { description: "小カテゴリーまで選択してください。" });
+      toast.error("カテゴリー不備", {
+        description: "小カテゴリーまで選択してください。",
+      });
       return;
     }
 
@@ -263,7 +271,9 @@ export function ItemCreate() {
                   size="sm"
                   onClick={handleSuggestCategory}
                   // 画像、名前、説明のいずれかが欠けている、または通信中は無効化
-                  disabled={isSuggesting || !name || !description || files.length === 0}
+                  disabled={
+                    isSuggesting || !name || !description || files.length === 0
+                  }
                   className="text-primary hover:text-primary/80 h-8"
                 >
                   {isSuggesting ? (
@@ -305,7 +315,12 @@ export function ItemCreate() {
                   variant="ghost"
                   size="sm"
                   onClick={handleSuggestPrice}
-                  disabled={isPriceSuggesting || !name || !description || files.length === 0}
+                  disabled={
+                    isPriceSuggesting ||
+                    !name ||
+                    !description ||
+                    files.length === 0
+                  }
                   className="text-primary hover:text-primary/80 h-8"
                 >
                   {isPriceSuggesting ? (

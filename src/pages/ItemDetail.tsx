@@ -36,8 +36,6 @@ export function ItemDetail() {
   const { id: itemId } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  if (!itemId) return <div>商品IDが指定されていません。</div>;
-
   const { isLoggedIn } = useAuth();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [commentBody, setCommentBody] = useState("");
@@ -47,7 +45,8 @@ export function ItemDetail() {
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
 
   // Hooks
-  const { likeCount, isLiked, toggleLike, isLikeProcessing } = useItemLike(itemId);
+  const { likeCount, isLiked, toggleLike, isLikeProcessing } =
+    useItemLike(itemId);
 
   const {
     data: item,
@@ -64,11 +63,19 @@ export function ItemDetail() {
   } = useItemComments(itemId);
 
   const { data: currentUser } = useCurrentUser();
-  const { 
-    data: seller, 
-    isLoading: isLoadingSeller, 
-    isError: isSellerError 
+  const {
+    data: seller,
+    isLoading: isLoadingSeller,
+    isError: isSellerError,
   } = useItemSeller(item);
+
+  const { data: categories } = useCategories();
+  const categoryData = useMemo(() => {
+    if (!item || !categories) return null;
+    return categories.find((c) => c.id === item.category_id);
+  }, [item, categories]);
+
+  if (!itemId) return <div>商品IDが指定されていません。</div>;
 
   const conditionNames = [
     "新品・未使用",
@@ -95,7 +102,7 @@ export function ItemDetail() {
       { itemId, data: { body: commentBody } },
       {
         onSuccess: () => setCommentBody(""),
-      }
+      },
     );
   };
 
@@ -108,10 +115,10 @@ export function ItemDetail() {
         { itemId, commentId: commentToDelete },
         {
           onSuccess: () => {
-             // 削除成功時にステートをリセット（自動でも閉じますが念のため）
-             setCommentToDelete(null);
-          }
-        }
+            // 削除成功時にステートをリセット（自動でも閉じますが念のため）
+            setCommentToDelete(null);
+          },
+        },
       );
     }
   };
@@ -129,29 +136,25 @@ export function ItemDetail() {
   const handlePreviousImage = () => {
     if (!item || item.images.length === 0) return;
     setCurrentImageIndex((prev) =>
-      prev === 0 ? item!.images.length - 1 : prev - 1
+      prev === 0 ? item!.images.length - 1 : prev - 1,
     );
   };
   const handleNextImage = () => {
     if (!item || item.images.length === 0) return;
     setCurrentImageIndex((prev) =>
-      prev === item!.images.length - 1 ? 0 : prev + 1
+      prev === item!.images.length - 1 ? 0 : prev + 1,
     );
   };
 
   const isOwner = isLoggedIn && currentUser?.id === item?.seller_id;
-  const { data: categories } = useCategories();
-  const categoryData = useMemo(() => {
-      if (!item || !categories) return null;
-      return categories.find(c => c.id === item.category_id);
-  }, [item, categories]);
+  
 
   if (isLoadingItem || commentsQuery.isLoading || (isLoadingSeller && item)) {
     return <FullPageLoader />;
   }
 
   if (isErrorItem || !item) {
-    toast.error("無効な商品", {"description": "商品が見つかりませんでした。"})
+    toast.error("無効な商品", { description: "商品が見つかりませんでした。" });
     navigate("/items");
     return <div>商品が見つかりませんでした。</div>;
   }
@@ -243,66 +246,67 @@ export function ItemDetail() {
               </h2>
 
               <div className="space-y-4 mb-6">
-      {commentsQuery.data?.map((comment) => {
-        // ▼ 修正: ユーザーの状態を判定するロジック
-        const commentUser = comment.user;
-        // ユーザーデータが無い、または is_deleted フラグが立っている場合は「退会済み」扱い
-        const isDeletedUser = !commentUser;
-        
-        const displayName = isDeletedUser 
-            ? "退会済みユーザー" 
-            : (commentUser.username || `User ${comment.user_id}`);
-            
-        const avatarSrc = isDeletedUser 
-            ? "/placeholder.svg" // 退会済み用の画像があればそれに変更
-            : (commentUser.icon_url || "/placeholder.svg");
+                {commentsQuery.data?.map((comment) => {
+                  // ▼ 修正: ユーザーの状態を判定するロジック
+                  const commentUser = comment.user;
+                  // ユーザーデータが無い、または is_deleted フラグが立っている場合は「退会済み」扱い
+                  const isDeletedUser = !commentUser;
 
-        return (
-          <div key={comment.id} className="flex gap-3">
-            <Avatar className="h-10 w-10 border">
-              <AvatarImage 
-                src={avatarSrc} 
-                className="object-cover"
-              />
-              <AvatarFallback>
-                 {/* 退会済みの場合は "?"、そうでなければ頭文字 */}
-                 {isDeletedUser ? "?" : displayName[0].toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`font-semibold text-sm ${isDeletedUser ? "text-muted-foreground/70" : ""}`}>
-                  {displayName}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {comment.created_at}
-                </span>
+                  const displayName = isDeletedUser
+                    ? "退会済みユーザー"
+                    : commentUser.username || `User ${comment.user_id}`;
+
+                  const avatarSrc = isDeletedUser
+                    ? "/placeholder.svg" // 退会済み用の画像があればそれに変更
+                    : commentUser.icon_url || "/placeholder.svg";
+
+                  return (
+                    <div key={comment.id} className="flex gap-3">
+                      <Avatar className="h-10 w-10 border">
+                        <AvatarImage src={avatarSrc} className="object-cover" />
+                        <AvatarFallback>
+                          {/* 退会済みの場合は "?"、そうでなければ頭文字 */}
+                          {isDeletedUser ? "?" : displayName[0].toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span
+                            className={`font-semibold text-sm ${isDeletedUser ? "text-muted-foreground/70" : ""}`}
+                          >
+                            {displayName}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {comment.created_at}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {comment.body}
+                        </p>
+                      </div>
+
+                      {/* 削除ボタン: ログイン中 かつ 自分のコメント かつ ユーザーが存在する場合のみ表示 */}
+                      {isLoggedIn &&
+                        currentUser?.id === comment.user_id &&
+                        !isDeletedUser && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-muted-foreground hover:text-destructive"
+                            onClick={() => handleDeleteComment(comment.id)}
+                            disabled={isDeletingComment}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                    </div>
+                  );
+                })}
               </div>
-              <p className="text-sm text-muted-foreground">
-                {comment.body}
-              </p>
-            </div>
-            
-            {/* 削除ボタン: ログイン中 かつ 自分のコメント かつ ユーザーが存在する場合のみ表示 */}
-            {isLoggedIn && currentUser?.id === comment.user_id && !isDeletedUser && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-destructive"
-                onClick={() => handleDeleteComment(comment.id)}
-                disabled={isDeletingComment}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        );
-      })}
-    </div>
-              
+
               <Separator className="my-4" />
-              
+
               {isLoggedIn ? (
                 <form onSubmit={handleSubmitComment} className="space-y-3">
                   <Textarea
@@ -361,17 +365,19 @@ export function ItemDetail() {
 
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   {/* いいね */}
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="p-0 hover:bg-transparent text-muted-foreground"
                     onClick={handleLikeClick}
                     disabled={isLikeProcessing}
                   >
-                    <Heart className={`h-5 w-5 mr-1 ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
+                    <Heart
+                      className={`h-5 w-5 mr-1 ${isLiked ? "fill-red-500 text-red-500" : ""}`}
+                    />
                     <span>{likeCount}</span>
                   </Button>
-                  
+
                   <span className="mx-2">|</span>
 
                   <MessageCircle className="h-4 w-4 mr-1" />
@@ -384,7 +390,9 @@ export function ItemDetail() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">商品の状態</span>
                     <Badge variant="secondary">
-                      {item.condition ? conditionNames[item.condition - 1] : "未設定"}
+                      {item.condition
+                        ? conditionNames[item.condition - 1]
+                        : "未設定"}
                     </Badge>
                   </div>
                 </div>
@@ -399,23 +407,27 @@ export function ItemDetail() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <Button 
-                      className="w-full" 
-                      size="lg" 
+                    <Button
+                      className="w-full"
+                      size="lg"
                       disabled={!item.selling}
                       onClick={handlePurchaseClick}
                     >
                       {item.selling ? "購入する" : "売り切れ"}
                     </Button>
                     <div className="grid grid-cols-2 gap-2">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={handleLikeClick}
                         disabled={isLikeProcessing}
-                        className={isLiked ? "text-red-600 border-red-200 bg-red-50" : ""}
+                        className={
+                          isLiked ? "text-red-600 border-red-200 bg-red-50" : ""
+                        }
                       >
-                        <Heart className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`} />
+                        <Heart
+                          className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`}
+                        />
                         {isLiked ? "いいね済み" : "いいね"}
                       </Button>
                       <Button variant="outline" size="sm">
@@ -438,7 +450,10 @@ export function ItemDetail() {
                     className="flex items-center gap-3 hover:opacity-80 transition-opacity"
                   >
                     <Avatar className="h-12 w-12 border">
-                      <AvatarImage src={seller.icon_url || "/placeholder.svg"} className="object-cover" />
+                      <AvatarImage
+                        src={seller.icon_url || "/placeholder.svg"}
+                        className="object-cover"
+                      />
                       <AvatarFallback>
                         {(seller.username || seller.email)[0].toUpperCase()}
                       </AvatarFallback>
@@ -455,12 +470,14 @@ export function ItemDetail() {
                 ) : isSellerError ? (
                   /* 退会済みユーザーの場合 */
                   <div className="flex items-center gap-3 opacity-60">
-                     <Avatar className="h-12 w-12 border">
-                       <AvatarFallback>?</AvatarFallback>
-                     </Avatar>
-                     <div className="flex-1">
-                       <p className="font-semibold text-muted-foreground">退会済みユーザー</p>
-                     </div>
+                    <Avatar className="h-12 w-12 border">
+                      <AvatarFallback>?</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-semibold text-muted-foreground">
+                        退会済みユーザー
+                      </p>
+                    </div>
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">読み込み中...</p>
@@ -474,9 +491,7 @@ export function ItemDetail() {
                   asChild={!!seller} // sellerがいる時だけasChild (Linkとして振る舞う)
                 >
                   {seller ? (
-                    <Link to={`/users/${seller.id}`}>
-                      出品者のページを見る
-                    </Link>
+                    <Link to={`/users/${seller.id}`}>出品者のページを見る</Link>
                   ) : (
                     <span>出品者のページを見る</span>
                   )}
@@ -502,7 +517,8 @@ export function ItemDetail() {
         title="ログインが必要です"
         description={
           <>
-            この機能を使うにはログインが必要です。<br />
+            この機能を使うにはログインが必要です。
+            <br />
             ログインページに移動しますか？
           </>
         }

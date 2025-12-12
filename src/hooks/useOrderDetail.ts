@@ -44,10 +44,10 @@ export function useOrderPartner(
     queryFn: () => fetchUser(partnerId!),
     enabled: !!partnerId,
     retry: (failureCount, error) => {
-        if (axios.isAxiosError(error) && error.response?.status === 404) {
-            return false; // 404なら即座に諦める（エラーにする）
-        }
-        return failureCount < 3; // それ以外なら3回まで粘る
-    }
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return false; // 404なら即座に諦める（エラーにする）
+      }
+      return failureCount < 3; // それ以外なら3回まで粘る
+    },
   });
 }

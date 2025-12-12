@@ -35,12 +35,12 @@ import { useItems } from "../hooks/useItems";
 export function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
-  
+
   // ローカルステート
   const [searchTerm, setSearchTerm] = useState(query);
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
   const [sortBy, setSortBy] = useState("new");
-  
+
   // 価格による絞り込みはAPI未整備のため一時的に無効化
   // const [priceRange, setPriceRange] = useState([0, 100000]);
 
@@ -67,7 +67,6 @@ export function Search() {
   return (
     <div className="container px-4 py-8 md:px-6">
       <div className="flex flex-col gap-6">
-        
         {/* Search Header */}
         <div className="flex flex-col gap-4">
           <h1 className="text-3xl font-bold">商品を検索</h1>
@@ -105,9 +104,7 @@ export function Search() {
                   </SheetDescription>
                 </SheetHeader>
                 <div className="mt-6">
-                  <FilterContent
-                    setCategoryId={setCategoryId}
-                  />
+                  <FilterContent setCategoryId={setCategoryId} />
                 </div>
               </SheetContent>
             </Sheet>
@@ -122,9 +119,7 @@ export function Search() {
                 <CardTitle>絞り込み</CardTitle>
               </CardHeader>
               <CardContent>
-                <FilterContent
-                  setCategoryId={setCategoryId}
-                />
+                <FilterContent setCategoryId={setCategoryId} />
               </CardContent>
             </Card>
           </aside>
@@ -144,7 +139,7 @@ export function Search() {
                   </>
                 )}
               </p>
-              
+
               {/* Sort Selector */}
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-[160px]">
@@ -160,32 +155,36 @@ export function Search() {
 
             {/* Loading State */}
             {isLoading ? (
-               <div className="flex justify-center items-center py-20">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-               </div>
+              <div className="flex justify-center items-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
             ) : (
-                <>
-                    {/* No Results */}
-                    {items?.length === 0 && (
-                        <div className="text-center py-12 text-muted-foreground bg-muted/30 rounded-lg">
-                            <p className="text-lg font-medium">該当する商品が見つかりませんでした。</p>
-                            <p className="text-sm mt-2">検索条件を変えて再度お試しください。</p>
-                        </div>
-                    )}
+              <>
+                {/* No Results */}
+                {items?.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground bg-muted/30 rounded-lg">
+                    <p className="text-lg font-medium">
+                      該当する商品が見つかりませんでした。
+                    </p>
+                    <p className="text-sm mt-2">
+                      検索条件を変えて再度お試しください。
+                    </p>
+                  </div>
+                )}
 
-                    {/* Item Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {items?.map((item) => (
-                            <ItemCard
-                            key={item.id}
-                            id={item.id}
-                            name={item.name}
-                            price={item.price}
-                            image={item.images[0]?.image_url}
-                            />
-                        ))}
-                    </div>
-                </>
+                {/* Item Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {items?.map((item) => (
+                    <ItemCard
+                      key={item.id}
+                      id={item.id}
+                      name={item.name}
+                      price={item.price}
+                      image={item.images[0]?.image_url}
+                    />
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -204,7 +203,6 @@ function FilterContent({
 }) {
   return (
     <div className="space-y-6">
-      
       {/* カテゴリーセレクター */}
       <div className="space-y-2">
         <Label>カテゴリー</Label>

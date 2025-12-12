@@ -20,12 +20,16 @@ export function usePurchase() {
   const mutation = useMutation({
     mutationFn: purchaseItem,
     onSuccess: (order) => {
-      toast.success("購入完了",{"description": "購入が完了しました。取引ページに移動します。"});
+      toast.success("購入完了", {
+        description: "購入が完了しました。取引ページに移動します。",
+      });
       navigate(`/orders/${order.id}`);
     },
     onError: (error: unknown) => {
       if (axios.isAxiosError(error)) {
-        toast.error("購入失敗",{"description": `購入に失敗しました: ${error.response?.data?.detail || error.message}`});
+        toast.error("購入失敗", {
+          description: `購入に失敗しました: ${error.response?.data?.detail || error.message}`,
+        });
       } else {
         alert("予期せぬエラーが発生しました。");
       }

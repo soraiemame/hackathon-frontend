@@ -21,7 +21,7 @@ async function fetchUserItems(userId: string): Promise<Item[]> {
 }
 
 async function fetchMyLikes(): Promise<Like[]> {
-  const { data } = await apiClient.get('/api/users/me/likes');
+  const { data } = await apiClient.get("/api/users/me/likes");
   return data;
 }
 
@@ -33,11 +33,11 @@ export function useUser(userId: string | undefined) {
     queryFn: () => fetchUser(userId!),
     enabled: !!userId,
     retry: (failureCount, error) => {
-        if (axios.isAxiosError(error) && error.response?.status === 404) {
-            return false; // 404なら即座に諦める（エラーにする）
-        }
-        return failureCount < 3; // それ以外なら3回まで粘る
-    }
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return false; // 404なら即座に諦める（エラーにする）
+      }
+      return failureCount < 3; // それ以外なら3回まで粘る
+    },
   });
 }
 
@@ -47,17 +47,17 @@ export function useUserItems(userId: string | undefined) {
     queryFn: () => fetchUserItems(userId!),
     enabled: !!userId,
     retry: (failureCount, error) => {
-        if (axios.isAxiosError(error) && error.response?.status === 404) {
-            return false; // 404なら即座に諦める（エラーにする）
-        }
-        return failureCount < 3; // それ以外なら3回まで粘る
-    }
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return false; // 404なら即座に諦める（エラーにする）
+      }
+      return failureCount < 3; // それ以外なら3回まで粘る
+    },
   });
 }
 
 export function useMyLikes(enabled: boolean) {
   return useQuery({
-    queryKey: ['myLikes'],
+    queryKey: ["myLikes"],
     queryFn: fetchMyLikes,
     enabled: enabled, // マイページの時だけ有効にする
   });

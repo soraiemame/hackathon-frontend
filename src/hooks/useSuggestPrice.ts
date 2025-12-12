@@ -1,5 +1,5 @@
-import { useMutation } from '@tanstack/react-query';
-import apiClient from '../api/client';
+import { useMutation } from "@tanstack/react-query";
+import apiClient from "../api/client";
 
 interface SuggestPriceParams {
   title: string;
@@ -15,23 +15,25 @@ interface SuggestPriceResponse {
   reason: string;
 }
 
-async function suggestPrice(params: SuggestPriceParams): Promise<SuggestPriceResponse> {
+async function suggestPrice(
+  params: SuggestPriceParams,
+): Promise<SuggestPriceResponse> {
   const formData = new FormData();
-  formData.append('title', params.title);
-  formData.append('description', params.description);
-  formData.append('condition', String(params.condition));
-  formData.append('image', params.image);
+  formData.append("title", params.title);
+  formData.append("description", params.description);
+  formData.append("condition", String(params.condition));
+  formData.append("image", params.image);
 
   const { data } = await apiClient.post<SuggestPriceResponse>(
-    '/api/items/suggest-price',
+    "/api/items/suggest-price",
     formData,
     {
       headers: {
         // 422エラー対策: boundary自動生成のため明示的にundefinedにするか
         // ブラウザ任せにする設定
-        'Content-Type': undefined, 
+        "Content-Type": undefined,
       } as any,
-    }
+    },
   );
 
   return data;

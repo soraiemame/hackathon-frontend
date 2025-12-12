@@ -1,6 +1,12 @@
 import { useState, useMemo, useEffect } from "react";
 import { useCategories } from "../hooks/useCategory";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 interface CategorySelectorProps {
   value?: number;
@@ -8,7 +14,11 @@ interface CategorySelectorProps {
   className?: string;
 }
 
-export function CategorySelector({ value, onChange, className }: CategorySelectorProps) {
+export function CategorySelector({
+  value,
+  onChange,
+  className,
+}: CategorySelectorProps) {
   const { data: categories } = useCategories();
 
   // 内部状態
@@ -104,8 +114,7 @@ export function CategorySelector({ value, onChange, className }: CategorySelecto
   useEffect(() => {
     if (!categories || categories.length === 0) return;
     if (value === undefined) return;
-    if (String(value) === selectedC2)
-        return;
+    if (String(value) === selectedC2) return;
 
     // 1. ターゲットとなる行データを探す
     const target = categories.find((c) => c.id === value);
@@ -115,13 +124,17 @@ export function CategorySelector({ value, onChange, className }: CategorySelecto
 
     // C0の特定
     const targetC0Key = target.c0_name.trim().toLowerCase();
-    const foundC0 = c0List.find(i => i.value.trim().toLowerCase() === targetC0Key);
+    const foundC0 = c0List.find(
+      (i) => i.value.trim().toLowerCase() === targetC0Key,
+    );
     const finalC0 = foundC0 ? foundC0.value : target.c0_name;
 
     // C1の特定 (targetと同じC0を持つデータ群から探す)
-    const relevantCategories = categories.filter(c => c.c0_name === finalC0);
+    const relevantCategories = categories.filter((c) => c.c0_name === finalC0);
     const targetC1Key = target.c1_name.trim().toLowerCase();
-    const matchedC1Obj = relevantCategories.find(c => c.c1_name.trim().toLowerCase() === targetC1Key);
+    const matchedC1Obj = relevantCategories.find(
+      (c) => c.c1_name.trim().toLowerCase() === targetC1Key,
+    );
     const finalC1 = matchedC1Obj ? matchedC1Obj.c1_name : target.c1_name;
 
     // 3. 状態を一括更新
@@ -132,10 +145,8 @@ export function CategorySelector({ value, onChange, className }: CategorySelecto
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, categories]);
 
-
   return (
     <div className={`flex flex-col gap-4 sm:flex-row ${className}`}>
-
       <div className="w-full sm:w-[200px]">
         <Select value={selectedC0} onValueChange={handleC0Change}>
           <SelectTrigger className="w-full">

@@ -54,9 +54,11 @@ export function ItemEdit() {
     e.preventDefault();
     // ▼ 変更: undefined チェック
     if (!query.data || categoryId === undefined) {
-        toast.error("カテゴリー不備", { description: "小カテゴリーまで選択してください。" });
-        return;
-    };
+      toast.error("カテゴリー不備", {
+        description: "小カテゴリーまで選択してください。",
+      });
+      return;
+    }
 
     const updatedData: ItemCreate = {
       name: name,
@@ -118,10 +120,7 @@ export function ItemEdit() {
                  1. key={categoryId} を削除（これがリセットの原因でした）
                  2. value={categoryId} を追加（これで初期値を渡します）
               */}
-              <CategorySelector 
-                value={categoryId} 
-                onChange={setCategoryId} 
-              />
+              <CategorySelector value={categoryId} onChange={setCategoryId} />
               <p className="text-xs text-muted-foreground">
                 変更する場合は選択し直してください
               </p>
@@ -140,7 +139,7 @@ export function ItemEdit() {
               />
               <p className="text-xs text-muted-foreground">1000文字以内</p>
             </div>
-            
+
             <div className="space-y-2">
               <Label>商品の状態 *</Label>
               <Select value={condition} onValueChange={setCondition} required>

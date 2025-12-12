@@ -26,8 +26,8 @@ export function UserProfile() {
           <div className="flex flex-col sm:flex-row gap-6 items-start">
             <Avatar className="h-24 w-24 border">
               {/* ▼ 修正: user.icon_url を使用 */}
-              <AvatarImage 
-                src={user.icon_url || "/placeholder.svg"} 
+              <AvatarImage
+                src={user.icon_url || "/placeholder.svg"}
                 className="object-cover"
               />
               <AvatarFallback>

@@ -45,7 +45,9 @@ export function Login() {
       navigate("/users/me");
     },
     onError: () => {
-      toast.error("ログイン失敗",{ description: "メールアドレスまたはパスワードが間違っています。" })
+      toast.error("ログイン失敗", {
+        description: "メールアドレスまたはパスワードが間違っています。",
+      });
     },
   });
 

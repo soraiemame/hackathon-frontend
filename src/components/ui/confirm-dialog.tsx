@@ -45,7 +45,7 @@ export function ConfirmDialog({
         <AlertDialogFooter>
           <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
           <AlertDialogAction
-            onClick={(_e) => {
+            onClick={() => {
               // アクション実行
               onAction();
             }}

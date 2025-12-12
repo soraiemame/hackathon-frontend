@@ -86,7 +86,7 @@ export function useCreateItem() {
     },
     onError: (error) => {
       console.error(error);
-      toast.error("出品失敗",{"description": "出品に失敗しました。"})
+      toast.error("出品失敗", { description: "出品に失敗しました。" });
     },
   });
 

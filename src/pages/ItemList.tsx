@@ -3,7 +3,12 @@ import { useItems } from "../hooks/useItems";
 
 import { ItemCard } from "../components/item-card";
 import { Button } from "../components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
 
 import { useRecommendations } from "../hooks/useRecommendations"; // ▼ 追加
 import { useAuth } from "../contexts/Auth"; // ▼ 追加
@@ -14,17 +19,18 @@ import { CategorySelector } from "../components/category-selector";
 export function ItemList() {
   const { isLoggedIn, user } = useAuth();
   // --- 1. 状態管理 ---
-  const [activeTab, setActiveTab] = useState("new"); 
+  const [activeTab, setActiveTab] = useState("new");
 
-  const [targetCategoryId, setTargetCategoryId] = useState<number | undefined>(undefined);
+  const [targetCategoryId, setTargetCategoryId] = useState<number | undefined>(
+    undefined,
+  );
 
   // --- 2. データ取得 & ロジック ---
-  const { data: recommendedItems} = useRecommendations(isLoggedIn);
-  const { data: items, isLoading } = useItems({ 
-      sortBy: activeTab,
-      categoryId: targetCategoryId 
+  const { data: recommendedItems } = useRecommendations(isLoggedIn);
+  const { data: items, isLoading } = useItems({
+    sortBy: activeTab,
+    categoryId: targetCategoryId,
   });
-  
 
   // if (isLoading || isLoadingRec) return <FullPageLoader />;
 
@@ -39,12 +45,15 @@ export function ItemList() {
                 {user?.username ? `${user.username}さんへの` : ""}おすすめ
               </h2>
             </div>
-            
+
             {/* 横スクロールエリア */}
             <div className="relative">
               <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
                 {recommendedItems.map((item) => (
-                  <div key={item.id} className="min-w-[160px] w-[160px] sm:min-w-[200px] sm:w-[200px] snap-start">
+                  <div
+                    key={item.id}
+                    className="min-w-[160px] w-[160px] sm:min-w-[200px] sm:w-[200px] snap-start"
+                  >
                     <ItemCard
                       id={item.id}
                       name={item.name}
@@ -60,21 +69,25 @@ export function ItemList() {
         {/* メインリスト */}
         <div className="flex flex-col gap-4">
           <h1 className="text-3xl font-bold">すべての商品</h1>
-          
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <div className="flex flex-col gap-4 mb-6">
               <TabsList className="w-full sm:w-auto justify-start overflow-x-auto">
                 <TabsTrigger value="new">新着</TabsTrigger>
                 <TabsTrigger value="popular">人気</TabsTrigger>
                 <TabsTrigger value="cheap">価格が安い順</TabsTrigger>
               </TabsList>
-              
+
               {/* ▼ ここが消えないようにする！ */}
               <div className="w-full max-w-3xl">
-                  <CategorySelector 
-                    onChange={setTargetCategoryId} 
-                    className="grid grid-cols-1 sm:grid-cols-3 gap-2" 
-                  />
+                <CategorySelector
+                  onChange={setTargetCategoryId}
+                  className="grid grid-cols-1 sm:grid-cols-3 gap-2"
+                />
               </div>
             </div>
 
@@ -96,9 +109,9 @@ export function ItemList() {
                     />
                   ))}
                   {items?.length === 0 && (
-                      <div className="col-span-full text-center py-10 text-muted-foreground">
-                          条件に一致する商品は見つかりませんでした。
-                      </div>
+                    <div className="col-span-full text-center py-10 text-muted-foreground">
+                      条件に一致する商品は見つかりませんでした。
+                    </div>
                   )}
                 </div>
               )}
@@ -106,11 +119,13 @@ export function ItemList() {
             </TabsContent>
           </Tabs>
         </div>
-        
+
         {!isLoading && items && items.length > 0 && (
-            <div className="flex justify-center mt-8">
-            <Button variant="outline" size="lg">もっと見る</Button>
-            </div>
+          <div className="flex justify-center mt-8">
+            <Button variant="outline" size="lg">
+              もっと見る
+            </Button>
+          </div>
         )}
       </div>
     </div>

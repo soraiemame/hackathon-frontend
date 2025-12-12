@@ -66,7 +66,7 @@ export function useItemLike(itemId: string | undefined) {
       queryClient.invalidateQueries({ queryKey: ["myLikes"] });
     },
     onError: () => {
-      toast.error("操作失敗",{"description": "いいねに失敗しました。"})
+      toast.error("操作失敗", { description: "いいねに失敗しました。" });
     },
   });
 

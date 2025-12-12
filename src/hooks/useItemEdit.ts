@@ -42,7 +42,7 @@ export function useItemEdit(itemId: string | undefined) {
       navigate(`/items/${updatedItem.id}`);
     },
     onError: () => {
-      toast.error("更新失敗",{"description": "商品の更新に失敗しました。"});
+      toast.error("更新失敗", { description: "商品の更新に失敗しました。" });
     },
   });
 
