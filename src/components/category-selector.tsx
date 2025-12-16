@@ -15,11 +15,16 @@ interface CategorySelectorProps {
   isVertical?: boolean;
 }
 
+interface CategoryItem {
+  value: string;
+  label: string;
+}
+
 export function CategorySelector({
   value,
   onChange,
   className,
-  isVertical = false
+  isVertical = false,
 }: CategorySelectorProps) {
   const { data: categories } = useCategories();
 
@@ -31,18 +36,23 @@ export function CategorySelector({
   // --- 1. 大カテゴリ (c0) リスト ---
   const c0List = useMemo(() => {
     if (!categories) return [];
-    const map = new Map();
+    const map = new Map<string, CategoryItem>();
     categories.forEach((c) => {
       // 比較・重複排除用に小文字化したキーを使用
       const key = c.c0_name.trim().toLowerCase();
       if (map.has(key)) {
-        // "Other" より "Others" を優先するなどの既存ロジックがあればここに記述
         return;
       }
+
+      // "その他" の重複対策: c0_name_jp が "その他" でも、c0_name が "Other" でないものは除外
+      if (c.c0_name_jp === "その他" && c.c0_name !== "Other") {
+        return;
+      }
+
       map.set(key, { value: c.c0_name, label: c.c0_name_jp });
     });
     // その他を末尾にするソート
-    return Array.from(map.values()).sort((a, b) => {
+    return Array.from(map.values()).sort((a: CategoryItem, b: CategoryItem) => {
       if (a.label === "その他") return 1;
       if (b.label === "その他") return -1;
       return 0;
@@ -52,17 +62,36 @@ export function CategorySelector({
   // --- 2. 中カテゴリ (c1) リスト ---
   const c1List = useMemo(() => {
     if (!categories || selectedC0 === "all") return [];
-    const map = new Map();
+    const map = new Map<string, CategoryItem>();
     // 選択中のC0に基づいてフィルタリング
-    categories
-      .filter((c) => c.c0_name === selectedC0)
-      .forEach((c) => {
-        const key = c.c1_name.trim().toLowerCase();
-        if (map.has(key)) return;
-        map.set(key, { value: c.c1_name, label: c.c1_name_jp });
-      });
+    let bestOther: CategoryItem | null = null;
 
-    return Array.from(map.values()).sort((a, b) => {
+    const filteredC1 = categories.filter((c) => c.c0_name === selectedC0);
+    for (const c of filteredC1) {
+      const key = c.c1_name.trim().toLowerCase();
+      if (map.has(key)) continue;
+
+      // "その他" の特別扱い
+      if (c.c1_name_jp === "その他") {
+        // value (c1_name) が "その他" 以外のものを優先する
+        if (
+          !bestOther ||
+          (bestOther.value === "その他" && c.c1_name !== "その他")
+        ) {
+          bestOther = { value: c.c1_name, label: c.c1_name_jp };
+        }
+        continue;
+      }
+
+      map.set(key, { value: c.c1_name, label: c.c1_name_jp });
+    }
+
+    // ベストな「その他」があれば追加
+    if (bestOther) {
+      map.set(bestOther.value.trim().toLowerCase(), bestOther);
+    }
+
+    return Array.from(map.values()).sort((a: CategoryItem, b: CategoryItem) => {
       if (a.label === "その他") return 1;
       if (b.label === "その他") return -1;
       return 0;
@@ -72,17 +101,45 @@ export function CategorySelector({
   // --- 3. 小カテゴリ (c2) リスト ---
   const c2List = useMemo(() => {
     if (!categories || selectedC1 === "all") return [];
-    const map = new Map();
-    categories
-      .filter((c) => c.c1_name === selectedC1 && c.c0_name === selectedC0)
-      .forEach((c) => {
-        // C2はIDが一意なのでそのまま使用
-        const idStr = String(c.id);
-        if (map.has(idStr)) return;
-        map.set(idStr, { value: idStr, label: c.c2_name_jp });
-      });
+    const map = new Map<string, CategoryItem>();
+    let bestOther: {
+      value: string;
+      label: string;
+      internalName: string;
+    } | null = null;
 
-    return Array.from(map.values()).sort((a, b) => {
+    const filteredC2 = categories.filter((c) => c.c1_name === selectedC1 && c.c0_name === selectedC0);
+    for (const c of filteredC2) {
+      // C2はIDが一意なのでそのまま使用
+      const idStr = String(c.id);
+      if (map.has(idStr)) continue;
+
+      // "その他" の特別扱い
+      if (c.c2_name_jp === "その他") {
+        // c2_name が "その他" 以外のものを優先する
+        if (
+          !bestOther ||
+          (bestOther.internalName === "その他" && c.c2_name !== "その他")
+        ) {
+          bestOther = {
+            value: idStr,
+            label: c.c2_name_jp,
+            internalName: c.c2_name,
+          };
+        }
+        continue;
+      }
+
+      map.set(idStr, { value: idStr, label: c.c2_name_jp });
+    }
+
+    if (bestOther) {
+      // internalName を除外してマップに追加
+      const { value, label } = bestOther;
+      map.set(value, { value, label });
+    }
+
+    return Array.from(map.values()).sort((a: CategoryItem, b: CategoryItem) => {
       if (a.label === "その他") return 1;
       if (b.label === "その他") return -1;
       return 0;
@@ -127,7 +184,7 @@ export function CategorySelector({
     // C0の特定
     const targetC0Key = target.c0_name.trim().toLowerCase();
     const foundC0 = c0List.find(
-      (i) => i.value.trim().toLowerCase() === targetC0Key,
+      (i: CategoryItem) => i.value.trim().toLowerCase() === targetC0Key,
     );
     const finalC0 = foundC0 ? foundC0.value : target.c0_name;
 
@@ -147,13 +204,13 @@ export function CategorySelector({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, categories]);
 
-  const containerLayout = isVertical 
-    ? "flex flex-col gap-4" 
+  const containerLayout = isVertical
+    ? "flex flex-col gap-4"
     : "flex flex-col gap-4 sm:flex-row";
 
   // 縦並びモードなら "w-full" 固定、そうでなければ "sm:w-[200px]" (PCで幅固定) を適用
-  const itemWrapperClass = isVertical 
-    ? "w-full" 
+  const itemWrapperClass = isVertical
+    ? "w-full"
     : "w-full sm:w-[200px]";
 
   return (
@@ -165,7 +222,7 @@ export function CategorySelector({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">すべて</SelectItem>
-            {c0List.map((item) => (
+            {c0List.map((item: CategoryItem) => (
               <SelectItem key={item.value} value={item.value}>
                 {item.label}
               </SelectItem>
@@ -186,7 +243,7 @@ export function CategorySelector({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">すべて</SelectItem>
-            {c1List.map((item) => (
+            {c1List.map((item: CategoryItem) => (
               <SelectItem key={item.value} value={item.value}>
                 {item.label}
               </SelectItem>
@@ -207,7 +264,7 @@ export function CategorySelector({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">すべて</SelectItem>
-            {c2List.map((item) => (
+            {c2List.map((item: CategoryItem) => (
               <SelectItem key={item.value} value={item.value}>
                 {item.label}
               </SelectItem>

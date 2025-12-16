@@ -9,6 +9,7 @@ export interface UseItemsParams {
   search?: string; // 検索するための文字列
   minPrice?: number; // 下限価格
   maxPrice?: number; // 上限価格
+  includeSold?: boolean; // 売り切れ商品を含めるかどうか
 }
 
 // API呼び出し関数
@@ -33,6 +34,7 @@ async function fetchItems(params: UseItemsParams): Promise<Item[]> {
   // (バックエンドが min_price / max_price に対応している必要があります)
   if (params.minPrice !== undefined) queryParams.min_price = params.minPrice;
   if (params.maxPrice !== undefined) queryParams.max_price = params.maxPrice;
+  if (params.includeSold !== undefined) queryParams.include_sold = params.includeSold;
 
   // 3. APIリクエスト (クエリパラメータ付き)
   const { data } = await apiClient.get("/api/items", {

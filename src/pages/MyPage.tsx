@@ -16,7 +16,7 @@ async function fetchMyOrders(): Promise<Order[]> {
 
 async function fetchMyListings(userId: number): Promise<Item[]> {
   const { data } = await apiClient.get("/api/items", {
-    params: { seller_id: userId },
+    params: { seller_id: userId, include_mine: true },
   });
   return data;
 }

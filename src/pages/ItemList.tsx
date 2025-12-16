@@ -4,11 +4,12 @@ import { useItems } from "../hooks/useItems";
 import { ItemCard } from "../components/item-card";
 import { Button } from "../components/ui/button";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../components/ui/tabs";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 
 import { useRecommendations } from "../hooks/useRecommendations"; // ▼ 追加
 import { useAuth } from "../contexts/Auth"; // ▼ 追加
@@ -24,12 +25,15 @@ export function ItemList() {
   const [targetCategoryId, setTargetCategoryId] = useState<number | undefined>(
     undefined,
   );
+  // 売り切れ商品を除外するかどうかの状態
+  const [excludeSold, setExcludeSold] = useState(false);
 
   // --- 2. データ取得 & ロジック ---
   const { data: recommendedItems } = useRecommendations(isLoggedIn);
   const { data: items, isLoading } = useItems({
     sortBy: activeTab,
     categoryId: targetCategoryId,
+    includeSold: !excludeSold, // チェックが入っていたら false (含めない)
   });
 
   return (
@@ -69,55 +73,75 @@ export function ItemList() {
         <div className="flex flex-col gap-4">
           <h1 className="text-3xl font-bold">すべての商品</h1>
 
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <div className="flex flex-col gap-4 mb-6">
-              <TabsList className="w-full sm:w-auto justify-start overflow-x-auto">
-                <TabsTrigger value="new">新着</TabsTrigger>
-                <TabsTrigger value="popular">人気</TabsTrigger>
-                <TabsTrigger value="cheap">価格が安い順</TabsTrigger>
-              </TabsList>
+          {/* フィルター＆ソートエリア - Search.tsxと統一感を持たせる */}
+          <div className="flex flex-col gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                {/* ソート選択 */}
+                <Select value={activeTab} onValueChange={setActiveTab}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="並び替え" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new">新着順</SelectItem>
+                    <SelectItem value="popular">人気順</SelectItem>
+                    <SelectItem value="cheap">価格が安い順</SelectItem>
+                  </SelectContent>
+                </Select>
 
-              {/* ▼ ここが消えないようにする！ */}
-              <div className="w-full max-w-3xl">
-                <CategorySelector
-                  onChange={setTargetCategoryId}
-                  className="grid grid-cols-1 sm:grid-cols-3 gap-2"
-                />
+                {/* 売り切れ除外スイッチ */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="excludeSold"
+                    checked={excludeSold}
+                    onChange={(e) => setExcludeSold(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <label
+                    htmlFor="excludeSold"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    売り切れ商品を除外する
+                  </label>
+                </div>
               </div>
             </div>
 
-            <TabsContent value={activeTab} className="mt-0">
-              {/* ▼▼▼ 修正: ロード中はこのエリアだけスピナーを出す ▼▼▼ */}
-              {isLoading ? (
-                <div className="flex justify-center items-center py-20">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {items?.map((item) => (
-                    <ItemCard
-                      key={item.id}
-                      id={item.id}
-                      name={item.name}
-                      price={item.price}
-                      image={item.images[0]?.image_url}
-                      isSold={!item.selling}
-                    />
-                  ))}
-                  {items?.length === 0 && (
-                    <div className="col-span-full text-center py-10 text-muted-foreground">
-                      条件に一致する商品は見つかりませんでした。
-                    </div>
-                  )}
-                </div>
-              )}
-              {/* ▲▲▲ 修正ここまで ▲▲▲ */}
-            </TabsContent>
-          </Tabs>
+            {/* カテゴリーセレクター */}
+            <div className="w-full max-w-3xl">
+              <CategorySelector
+                onChange={setTargetCategoryId}
+              />
+            </div>
+          </div>
+
+          {/* アイテムリスト表示エリア */}
+          <div className="mt-0">
+            {isLoading ? (
+              <div className="flex justify-center items-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {items?.map((item) => (
+                  <ItemCard
+                    key={item.id}
+                    id={item.id}
+                    name={item.name}
+                    price={item.price}
+                    image={item.images[0]?.image_url}
+                    isSold={!item.selling}
+                  />
+                ))}
+                {items?.length === 0 && (
+                  <div className="col-span-full text-center py-10 text-muted-foreground">
+                    条件に一致する商品は見つかりませんでした。
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {!isLoading && items && items.length > 0 && (

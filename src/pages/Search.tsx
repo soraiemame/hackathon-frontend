@@ -40,6 +40,7 @@ export function Search() {
   const [searchTerm, setSearchTerm] = useState(query);
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
   const [sortBy, setSortBy] = useState("new");
+  const [excludeSold, setExcludeSold] = useState(false);
 
   // 価格による絞り込みはAPI未整備のため一時的に無効化
   // const [priceRange, setPriceRange] = useState([0, 100000]);
@@ -54,6 +55,7 @@ export function Search() {
     search: query,
     categoryId: categoryId,
     sortBy: sortBy,
+    includeSold: !excludeSold,
     // minPrice: priceRange[0], // TODO: API実装後に有効化
     // maxPrice: priceRange[1],
   });
@@ -104,7 +106,11 @@ export function Search() {
                   </SheetDescription>
                 </SheetHeader>
                 <div className="mt-6">
-                  <FilterContent setCategoryId={setCategoryId} />
+                  <FilterContent
+                    setCategoryId={setCategoryId}
+                    excludeSold={excludeSold}
+                    setExcludeSold={setExcludeSold}
+                  />
                 </div>
               </SheetContent>
             </Sheet>
@@ -119,7 +125,11 @@ export function Search() {
                 <CardTitle>絞り込み</CardTitle>
               </CardHeader>
               <CardContent>
-                <FilterContent setCategoryId={setCategoryId} />
+                <FilterContent
+                  setCategoryId={setCategoryId}
+                  excludeSold={excludeSold}
+                  setExcludeSold={setExcludeSold}
+                />
               </CardContent>
             </Card>
           </aside>
@@ -181,6 +191,7 @@ export function Search() {
                       name={item.name}
                       price={item.price}
                       image={item.images[0]?.image_url}
+                      isSold={!item.selling}
                     />
                   ))}
                 </div>
@@ -198,8 +209,12 @@ export function Search() {
 // ------------------------------------------------------------------
 function FilterContent({
   setCategoryId,
+  excludeSold,
+  setExcludeSold,
 }: {
   setCategoryId: (id: number | undefined) => void;
+  excludeSold: boolean;
+  setExcludeSold: (value: boolean) => void;
 }) {
   return (
     <div className="space-y-6">
@@ -208,6 +223,22 @@ function FilterContent({
         <Label>カテゴリー</Label>
         {/* CategorySelector を縦積み (flex-col) で表示 */}
         <CategorySelector onChange={setCategoryId} className="flex-col" isVertical={true} />
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="excludeSoldFilter"
+          checked={excludeSold}
+          onChange={(e) => setExcludeSold(e.target.checked)}
+          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+        />
+        <label
+          htmlFor="excludeSoldFilter"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          売り切れ商品を除外する
+        </label>
       </div>
 
       {/* TODO: 価格絞り込み機能の実装 */}

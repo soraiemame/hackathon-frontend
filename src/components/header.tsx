@@ -2,10 +2,17 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ShoppingBag, User, Plus, List } from "lucide-react";
+import { Search, ShoppingBag, User, Plus, List, Menu, LogIn, UserPlus } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useAuth } from "../contexts/Auth";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "./ui/sheet";
 
 export function Header() {
   const { isLoggedIn } = useAuth();
@@ -59,42 +66,94 @@ export function Header() {
         </div>
 
         <nav className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            asChild
-            className="hidden sm:inline-flex"
-          >
-            <Link to="/items">
-              <List className="h-5 w-5" />
-              <span className="sr-only">商品一覧</span>
-            </Link>
-          </Button>
-          {isLoggedIn ? (
-            <>
-              <Button variant="ghost" size="icon" asChild>
-                <Link to="/items/new">
-                  <Plus className="h-5 w-5" />
-                  <span className="sr-only">出品</span>
-                </Link>
+          {/* デスクトップ用メニュー (sm以上で表示) */}
+          <div className="hidden sm:flex items-center gap-2">
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/items">
+                <List className="h-5 w-5" />
+                <span className="sr-only">商品一覧</span>
+              </Link>
+            </Button>
+            {isLoggedIn ? (
+              <>
+                <Button variant="ghost" size="icon" asChild>
+                  <Link to="/items/new">
+                    <Plus className="h-5 w-5" />
+                    <span className="sr-only">出品</span>
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="icon" asChild>
+                  <Link to="/users/me">
+                    <User className="h-5 w-5" />
+                    <span className="sr-only">マイページ</span>
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link to="/login">ログイン</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/register">新規登録</Link>
+                </Button>
+              </>
+            )}
+          </div>
+
+          {/* モバイル用ハンバーガーメニュー (sm未満で表示) */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="sm:hidden">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">メニュー</span>
               </Button>
-              <Button variant="ghost" size="icon" asChild>
-                <Link to="/users/me">
-                  <User className="h-5 w-5" />
-                  <span className="sr-only">マイページ</span>
-                </Link>
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" asChild className="hidden sm:inline-flex">
-                <Link to="/login">ログイン</Link>
-              </Button>
-              <Button asChild>
-                <Link to="/register">新規登録</Link>
-              </Button>
-            </>
-          )}
+            </SheetTrigger>
+            <SheetContent side="right">
+              <SheetHeader>
+                <SheetTitle>メニュー</SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col gap-4 mt-8">
+                <Button variant="ghost" className="justify-start" asChild>
+                  <Link to="/items">
+                    <List className="mr-2 h-4 w-4" />
+                    商品一覧
+                  </Link>
+                </Button>
+                {isLoggedIn ? (
+                  <>
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <Link to="/items/new">
+                        <Plus className="mr-2 h-4 w-4" />
+                        出品する
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <Link to="/users/me">
+                        <User className="mr-2 h-4 w-4" />
+                        マイページ
+                      </Link>
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <Link to="/login">
+                        <LogIn className="mr-2 h-4 w-4" />
+                        ログイン
+                      </Link>
+                    </Button>
+                    <Button className="justify-start" asChild>
+                      <Link to="/register">
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        新規登録
+                      </Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </nav>
       </div>
     </header>
