@@ -2,7 +2,7 @@ import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "./contexts/Auth";
 
 import { Header } from "./components/header";
-import { Footer } from "./components/footer";
+// import { Footer } from "./components/footer";
 import { Toaster } from "./components/ui/sonner";
 import { Home } from "./pages/Home";
 import { Register } from "./pages/Register";
@@ -21,6 +21,8 @@ import { NotFound } from "./pages/NotFound";
 
 import "./index.css";
 import { FullPageLoader } from "./components/ui/full-page-loader";
+
+import { ShortsPage } from "./pages/ShortsPage";
 
 function ProtectedRoute() {
   const { isLoggedIn, isInitializing } = useAuth();
@@ -72,14 +74,15 @@ function App() {
 
           <Route path="/items" element={<ItemList />} />
           <Route path="/items/search" element={<Search />} />
+          <Route path="/items/shorts" element={<ShortsPage />} />
           <Route path="/items/:id" element={<ItemDetail />} />
           <Route path="/users/:id" element={<UserProfile />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      <Footer />
-      <Toaster />
+      {/* <Footer /> */}
+      <Toaster position="top-center" />
     </div>
   );
 }

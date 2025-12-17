@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ShoppingBag, User, Plus, List, Menu, LogIn, UserPlus } from "lucide-react";
+import { Search, ShoppingBag, User, Plus, List, Menu, LogIn, UserPlus, Play } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useAuth } from "../contexts/Auth";
@@ -18,6 +18,7 @@ export function Header() {
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // 検索処理を実行する関数
   const handleSearch = () => {
@@ -74,6 +75,12 @@ export function Header() {
                 <span className="sr-only">商品一覧</span>
               </Link>
             </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/items/shorts">
+                <Play className="h-5 w-5" />
+                <span className="sr-only">ショート</span>
+              </Link>
+            </Button>
             {isLoggedIn ? (
               <>
                 <Button variant="ghost" size="icon" asChild>
@@ -102,7 +109,7 @@ export function Header() {
           </div>
 
           {/* モバイル用ハンバーガーメニュー (sm未満で表示) */}
-          <Sheet>
+          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="sm:hidden">
                 <Menu className="h-5 w-5" />
@@ -114,21 +121,27 @@ export function Header() {
                 <SheetTitle>メニュー</SheetTitle>
               </SheetHeader>
               <div className="flex flex-col gap-4 mt-8">
-                <Button variant="ghost" className="justify-start" asChild>
+                <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                   <Link to="/items">
                     <List className="mr-2 h-4 w-4" />
                     商品一覧
                   </Link>
                 </Button>
+                <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/items/shorts">
+                    <Play className="mr-2 h-4 w-4" />
+                    ショート
+                  </Link>
+                </Button>
                 {isLoggedIn ? (
                   <>
-                    <Button variant="ghost" className="justify-start" asChild>
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/items/new">
                         <Plus className="mr-2 h-4 w-4" />
                         出品する
                       </Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" asChild>
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/users/me">
                         <User className="mr-2 h-4 w-4" />
                         マイページ
@@ -137,13 +150,13 @@ export function Header() {
                   </>
                 ) : (
                   <>
-                    <Button variant="ghost" className="justify-start" asChild>
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/login">
                         <LogIn className="mr-2 h-4 w-4" />
                         ログイン
                       </Link>
                     </Button>
-                    <Button className="justify-start" asChild>
+                    <Button className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/register">
                         <UserPlus className="mr-2 h-4 w-4" />
                         新規登録

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/Auth";
 
@@ -10,6 +10,7 @@ import {
   useCurrentUser,
 } from "../hooks/useItemDetail";
 import { useItemLike } from "../hooks/useLike";
+import apiClient from "../api/client";
 
 // UI Components
 import { Button } from "../components/ui/button";
@@ -26,6 +27,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Play,
 } from "lucide-react";
 import { FullPageLoader } from "../components/ui/full-page-loader";
 import { useCategories } from "../hooks/useCategory";
@@ -43,6 +45,8 @@ export function ItemDetail() {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
+  const [shortStatus, setShortStatus] = useState<string | null>(null);
+
 
   // Hooks
   const { likeCount, isLiked, toggleLike, isLikeProcessing } =
@@ -74,6 +78,24 @@ export function ItemDetail() {
     if (!item || !categories) return null;
     return categories.find((c) => c.id === item.category_id);
   }, [item, categories]);
+
+  // Check for Short existence
+  useEffect(() => {
+    if (!itemId) return;
+
+    // We only need to know if it succeeds or fails (404)
+    // We don't strictly need the data here unless we want to prefetch? 
+    // Just validation is enough.
+    // Use apiClient to ensure base URL is correct
+    apiClient.get(`/api/shorts/${itemId}`)
+      .then(res => {
+        setShortStatus(res.data.status);
+      })
+      .catch((err) => {
+        console.warn("Short fetch failed or not found", err);
+        setShortStatus(null)
+      });
+  }, [itemId]);
 
   if (!itemId) return <div>商品IDが指定されていません。</div>;
 
@@ -147,7 +169,7 @@ export function ItemDetail() {
   };
 
   const isOwner = isLoggedIn && currentUser?.id === item?.seller_id;
-  
+
 
   if (isLoadingItem || commentsQuery.isLoading || (isLoadingSeller && item)) {
     return <FullPageLoader />;
@@ -159,8 +181,205 @@ export function ItemDetail() {
     return <div>商品が見つかりませんでした。</div>;
   }
 
+  // --- Reuseable Blocks for Responsive Layout ---
+  const MainInfoContent = (
+    <Card>
+      <CardContent className="pt-6 space-y-4">
+        {categoryData && (
+          <div className="flex items-center flex-wrap gap-1 text-xs text-muted-foreground">
+            <span className="hover:underline hover:text-primary cursor-pointer">
+              {categoryData.c0_name_jp}
+            </span>
+            <ChevronRight className="h-3 w-3" />
+            <span className="hover:underline hover:text-primary cursor-pointer">
+              {categoryData.c1_name_jp}
+            </span>
+            <ChevronRight className="h-3 w-3" />
+            <span className="font-medium text-foreground">
+              {categoryData.c2_name_jp}
+            </span>
+          </div>
+        )}
+        <div>
+          <h1 className="text-2xl font-bold mb-2">{item.name}</h1>
+          <p className="text-3xl font-bold text-primary">
+            ¥{item.price.toLocaleString()}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          {/* いいね */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-0 hover:bg-transparent text-muted-foreground"
+            onClick={handleLikeClick}
+            disabled={isLikeProcessing}
+          >
+            <Heart
+              className={`h-5 w-5 mr-1 ${isLiked ? "fill-red-500 text-red-500" : ""}`}
+            />
+            <span>{likeCount}</span>
+          </Button>
+
+          <span className="mx-2">|</span>
+
+          <MessageCircle className="h-4 w-4 mr-1" />
+          <span>{commentsQuery.data?.length || 0}</span>
+        </div>
+
+        <Separator />
+
+        <div className="space-y-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">商品の状態</span>
+            <Badge variant="secondary">
+              {item.condition
+                ? conditionNames[item.condition - 1]
+                : "未設定"}
+            </Badge>
+          </div>
+        </div>
+
+        <Separator />
+
+        {isOwner ? (
+          <div className="space-y-2">
+            <Button className="w-full" asChild>
+              <Link to={`/items/${item.id}/edit`}>商品を編集</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <Button
+              className="w-full"
+              size="lg"
+              disabled={!item.selling}
+              onClick={handlePurchaseClick}
+            >
+              {item.selling ? "購入する" : "売り切れ"}
+            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLikeClick}
+                disabled={isLikeProcessing}
+                className={
+                  isLiked ? "text-red-600 border-red-200 bg-red-50" : ""
+                }
+              >
+                <Heart
+                  className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`}
+                />
+                {isLiked ? "いいね済み" : "いいね"}
+              </Button>
+              <Button variant="outline" size="sm">
+                <Share2 className="h-4 w-4 mr-1" />
+                シェア
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Shorts Button */}
+        {shortStatus === "completed" && (
+          <Button
+            className="w-full mt-2"
+            variant="secondary"
+            onClick={() => navigate(`/items/shorts?initialItemId=${itemId}`)}
+          >
+            <Play className="h-4 w-4 mr-2" />
+            ショート動画を見る
+          </Button>
+        )}
+        {(shortStatus === "processing" || shortStatus === "pending") && (
+          <Button
+            className="w-full mt-2"
+            variant="secondary"
+            disabled
+          >
+            <Play className="h-4 w-4 mr-2" />
+            動画生成中...
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const SellerInfoContent = (
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="pt-6">
+          {/* ▼ 修正: 出品者情報の表示ロジック */}
+          {seller ? (
+            <Link
+              to={`/users/${seller.id}`}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
+              <Avatar className="h-12 w-12 border">
+                <AvatarImage
+                  src={seller.icon_url || "/placeholder.svg"}
+                  className="object-cover"
+                />
+                <AvatarFallback>
+                  {(seller.username || seller.email)[0].toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <p className="font-semibold">
+                  {seller.username || seller.email}
+                </p>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>{seller.created_at} から利用</span>
+                </div>
+              </div>
+            </Link>
+          ) : isSellerError ? (
+            /* 退会済みユーザーの場合 */
+            <div className="flex items-center gap-3 opacity-60">
+              <Avatar className="h-12 w-12 border">
+                <AvatarFallback>?</AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <p className="font-semibold text-muted-foreground">
+                  退会済みユーザー
+                </p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">読み込み中...</p>
+          )}
+
+          {/* 出品者が存在する場合のみボタンを表示 */}
+          <Button
+            variant="outline"
+            className="w-full mt-4 bg-transparent"
+            disabled={!seller}
+            asChild={!!seller} // sellerがいる時だけasChild (Linkとして振る舞う)
+          >
+            {seller ? (
+              <Link to={`/users/${seller.id}`}>出品者のページを見る</Link>
+            ) : (
+              <span>出品者のページを見る</span>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Button
+        variant="ghost"
+        className="w-full text-muted-foreground"
+        size="sm"
+      >
+        <Flag className="h-4 w-4 mr-2" />
+        この商品を報告
+      </Button>
+    </div>
+  );
+
   return (
-    <div className="container px-4 py-8 md:px-6">
+    <div className="container mx-auto px-4 py-8 md:px-6">
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left Column */}
         <div className="lg:col-span-2">
@@ -196,11 +415,10 @@ export function ItemDetail() {
                     {item.images.map((_, index) => (
                       <button
                         key={index}
-                        className={`h-2 w-2 rounded-full transition-all ${
-                          index === currentImageIndex
-                            ? "bg-white w-6"
-                            : "bg-white/50"
-                        }`}
+                        className={`h-2 w-2 rounded-full transition-all ${index === currentImageIndex
+                          ? "bg-white w-6"
+                          : "bg-white/50"
+                          }`}
                         onClick={() => setCurrentImageIndex(index)}
                       />
                     ))}
@@ -213,11 +431,10 @@ export function ItemDetail() {
                 <button
                   key={image.id}
                   onClick={() => setCurrentImageIndex(index)}
-                  className={`aspect-square rounded-md overflow-hidden border-2 transition-all ${
-                    index === currentImageIndex
-                      ? "border-primary"
-                      : "border-transparent hover:border-border"
-                  }`}
+                  className={`aspect-square rounded-md overflow-hidden border-2 transition-all ${index === currentImageIndex
+                    ? "border-primary"
+                    : "border-transparent hover:border-border"
+                    }`}
                 >
                   <img
                     src={image.image_url || "/placeholder.svg"}
@@ -229,6 +446,12 @@ export function ItemDetail() {
             </div>
           </Card>
 
+
+          {/* Mobile: Main Info (Title/Price) appears here */}
+          <div className="lg:hidden mt-6">
+            {MainInfoContent}
+          </div>
+
           <Card className="mt-6">
             <CardContent className="pt-6">
               <h2 className="text-xl font-semibold mb-4">商品説明</h2>
@@ -237,6 +460,11 @@ export function ItemDetail() {
               </p>
             </CardContent>
           </Card>
+
+          {/* Mobile: Seller Info appears here */}
+          <div className="lg:hidden mt-6">
+            {SellerInfoContent}
+          </div>
 
           {/* Comments Section */}
           <Card className="mt-6">
@@ -339,174 +567,11 @@ export function ItemDetail() {
         {/* Right Column - Purchase Info */}
         <div className="lg:col-span-1">
           <div className="sticky top-20 space-y-4">
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                {categoryData && (
-                  <div className="flex items-center flex-wrap gap-1 text-xs text-muted-foreground">
-                    <span className="hover:underline hover:text-primary cursor-pointer">
-                      {categoryData.c0_name_jp}
-                    </span>
-                    <ChevronRight className="h-3 w-3" />
-                    <span className="hover:underline hover:text-primary cursor-pointer">
-                      {categoryData.c1_name_jp}
-                    </span>
-                    <ChevronRight className="h-3 w-3" />
-                    <span className="font-medium text-foreground">
-                      {categoryData.c2_name_jp}
-                    </span>
-                  </div>
-                )}
-                <div>
-                  <h1 className="text-2xl font-bold mb-2">{item.name}</h1>
-                  <p className="text-3xl font-bold text-primary">
-                    ¥{item.price.toLocaleString()}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {/* いいね */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="p-0 hover:bg-transparent text-muted-foreground"
-                    onClick={handleLikeClick}
-                    disabled={isLikeProcessing}
-                  >
-                    <Heart
-                      className={`h-5 w-5 mr-1 ${isLiked ? "fill-red-500 text-red-500" : ""}`}
-                    />
-                    <span>{likeCount}</span>
-                  </Button>
-
-                  <span className="mx-2">|</span>
-
-                  <MessageCircle className="h-4 w-4 mr-1" />
-                  <span>{commentsQuery.data?.length || 0}</span>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">商品の状態</span>
-                    <Badge variant="secondary">
-                      {item.condition
-                        ? conditionNames[item.condition - 1]
-                        : "未設定"}
-                    </Badge>
-                  </div>
-                </div>
-
-                <Separator />
-
-                {isOwner ? (
-                  <div className="space-y-2">
-                    <Button className="w-full" asChild>
-                      <Link to={`/items/${item.id}/edit`}>商品を編集</Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Button
-                      className="w-full"
-                      size="lg"
-                      disabled={!item.selling}
-                      onClick={handlePurchaseClick}
-                    >
-                      {item.selling ? "購入する" : "売り切れ"}
-                    </Button>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleLikeClick}
-                        disabled={isLikeProcessing}
-                        className={
-                          isLiked ? "text-red-600 border-red-200 bg-red-50" : ""
-                        }
-                      >
-                        <Heart
-                          className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`}
-                        />
-                        {isLiked ? "いいね済み" : "いいね"}
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Share2 className="h-4 w-4 mr-1" />
-                        シェア
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Seller Info */}
-            <Card>
-              <CardContent className="pt-6">
-                {/* ▼ 修正: 出品者情報の表示ロジック */}
-                {seller ? (
-                  <Link
-                    to={`/users/${seller.id}`}
-                    className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-                  >
-                    <Avatar className="h-12 w-12 border">
-                      <AvatarImage
-                        src={seller.icon_url || "/placeholder.svg"}
-                        className="object-cover"
-                      />
-                      <AvatarFallback>
-                        {(seller.username || seller.email)[0].toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="font-semibold">
-                        {seller.username || seller.email}
-                      </p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>{seller.created_at} から利用</span>
-                      </div>
-                    </div>
-                  </Link>
-                ) : isSellerError ? (
-                  /* 退会済みユーザーの場合 */
-                  <div className="flex items-center gap-3 opacity-60">
-                    <Avatar className="h-12 w-12 border">
-                      <AvatarFallback>?</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="font-semibold text-muted-foreground">
-                        退会済みユーザー
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">読み込み中...</p>
-                )}
-
-                {/* 出品者が存在する場合のみボタンを表示 */}
-                <Button
-                  variant="outline"
-                  className="w-full mt-4 bg-transparent"
-                  disabled={!seller}
-                  asChild={!!seller} // sellerがいる時だけasChild (Linkとして振る舞う)
-                >
-                  {seller ? (
-                    <Link to={`/users/${seller.id}`}>出品者のページを見る</Link>
-                  ) : (
-                    <span>出品者のページを見る</span>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Button
-              variant="ghost"
-              className="w-full text-muted-foreground"
-              size="sm"
-            >
-              <Flag className="h-4 w-4 mr-2" />
-              この商品を報告
-            </Button>
+            {/* Desktop: Main and Seller Info appear here */}
+            <div className="hidden lg:block space-y-4">
+              {MainInfoContent}
+              {SellerInfoContent}
+            </div>
           </div>
         </div>
       </div>

@@ -77,7 +77,7 @@ export function ItemEdit() {
     return <div>商品データが見つかりません。</div>;
 
   return (
-    <div className="container max-w-3xl px-4 py-8 md:px-6">
+    <div className="container mx-auto max-w-3xl px-4 py-8 md:px-6">
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">商品を編集</CardTitle>

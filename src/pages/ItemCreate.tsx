@@ -177,7 +177,7 @@ export function ItemCreate() {
 
   // 4.
   return (
-    <div className="container max-w-3xl px-4 py-8 md:px-6">
+    <div className="container mx-auto max-w-3xl px-4 py-8 md:px-6">
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">商品を出品</CardTitle>
