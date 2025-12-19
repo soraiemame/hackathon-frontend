@@ -4,10 +4,11 @@ interface AudioPlayerProps {
     src: string;
     isActive: boolean;
     isMuted: boolean;
+    volume?: number; // 0.0 to 1.0
     onEnded?: () => void;
 }
 
-export default function AudioPlayer({ src, isActive, isMuted, onEnded }: AudioPlayerProps) {
+export default function AudioPlayer({ src, isActive, isMuted, volume = 1.0, onEnded }: AudioPlayerProps) {
     const audioRef = useRef<HTMLAudioElement>(null);
 
     useEffect(() => {
@@ -34,6 +35,12 @@ export default function AudioPlayer({ src, isActive, isMuted, onEnded }: AudioPl
             audioRef.current.muted = isMuted;
         }
     }, [isMuted]);
+
+    useEffect(() => {
+        if (audioRef.current) {
+            audioRef.current.volume = Math.max(0, Math.min(1, volume));
+        }
+    }, [volume]);
 
     return (
         <audio

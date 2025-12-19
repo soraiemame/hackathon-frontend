@@ -53,6 +53,22 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
     const currentImage = productImages[currentImageIndex] || "/placeholder.svg"
     const currentSlide = short.slides?.find(s => s.index === currentImageIndex)
 
+    // Background Music Logic
+    const [bgmUrl, setBgmUrl] = useState<string | null>(null)
+
+    useEffect(() => {
+        if (!short.item_id) return
+
+        // Calculate music ID: (id % 10) + 1 -> 1 to 10
+        const musicId = (short.item_id % 10) + 1
+
+        apiClient.get<{ url: string }>(`/api/musics/${musicId}`)
+            .then(res => {
+                setBgmUrl(res.data.url)
+            })
+            .catch(err => console.error("Failed to fetch BGM", err))
+    }, [short.item_id])
+
     // Reset interaction states when slide becomes inactive
     useEffect(() => {
         if (!isActive) {
@@ -127,12 +143,22 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
 
     return (
         <div className="relative w-full h-full bg-black overflow-hidden select-none">
-            {/* Audio Player */}
+            {/* Audio Player (Voiceover) */}
             {short.audio_url && (
                 <AudioPlayer
                     src={short.audio_url}
                     isActive={isActive}
                     isMuted={isMuted}
+                />
+            )}
+
+            {/* Background Music Player */}
+            {bgmUrl && (
+                <AudioPlayer
+                    src={bgmUrl}
+                    isActive={isActive}
+                    isMuted={isMuted}
+                    volume={0.5}
                 />
             )}
 
