@@ -42,7 +42,7 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between gap-4 px-4 md:px-6">
         <Link to="/" className="flex items-center gap-2 font-bold text-xl">
           <ShoppingBag className="h-6 w-6 text-primary" />
-          <span className="text-pretty">フリマ</span>
+          <span className="text-pretty">FLICKA</span>
         </Link>
 
         <div className="flex flex-1 items-center gap-4 md:gap-6 max-w-xl">
