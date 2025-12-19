@@ -107,6 +107,7 @@ export function ItemCreate() {
         condition: Number(condition),
         image: mainImage,
       });
+      console.log(result)
 
       if (result && result.suggested_price) {
         setPrice(result.suggested_price);

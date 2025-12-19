@@ -156,7 +156,7 @@ export function Header() {
                         ログイン
                       </Link>
                     </Button>
-                    <Button className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/register">
                         <UserPlus className="mr-2 h-4 w-4" />
                         新規登録

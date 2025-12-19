@@ -5,25 +5,34 @@
 
 :root {
   /* White base with blue accent theme for flea market app */
-  --background: oklch(1 0 0); /* Pure white */
-  --foreground: oklch(0.2 0 0); /* Dark gray for text */
-  --card: oklch(1 0 0); /* White cards */
+  --background: oklch(1 0 0);
+  /* Pure white */
+  --foreground: oklch(0.2 0 0);
+  /* Dark gray for text */
+  --card: oklch(1 0 0);
+  /* White cards */
   --card-foreground: oklch(0.2 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2 0 0);
-  --primary: oklch(0.55 0.19 250); /* Blue accent */
-  --primary-foreground: oklch(1 0 0); /* White text on blue */
-  --secondary: oklch(0.96 0 0); /* Light gray */
+  --primary: oklch(0.55 0.19 250);
+  /* Blue accent */
+  --primary-foreground: oklch(1 0 0);
+  /* White text on blue */
+  --secondary: oklch(0.96 0 0);
+  /* Light gray */
   --secondary-foreground: oklch(0.2 0 0);
   --muted: oklch(0.96 0 0);
   --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.65 0.17 250); /* Lighter blue */
+  --accent: oklch(0.65 0.17 250);
+  /* Lighter blue */
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9 0 0); /* Light gray border */
+  --border: oklch(0.9 0 0);
+  /* Light gray border */
   --input: oklch(0.9 0 0);
-  --ring: oklch(0.55 0.19 250); /* Blue ring */
+  --ring: oklch(0.55 0.19 250);
+  /* Blue ring */
   --chart-1: oklch(0.55 0.19 250);
   --chart-2: oklch(0.65 0.17 250);
   --chart-3: oklch(0.75 0.15 250);
@@ -123,7 +132,40 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@keyframes ken-burns {
+  0% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes ken-burns-loop {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-ken-burns {
+  animation: ken-burns 5s ease-out forwards;
+}
+
+.animate-ken-burns-loop {
+  animation: ken-burns-loop 10s ease-in-out infinite;
 }

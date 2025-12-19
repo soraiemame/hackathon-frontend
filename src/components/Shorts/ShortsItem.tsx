@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Heart, MessageCircle, ChevronDown, X, Volume2, VolumeX } from "lucide-react"
+import { Heart, MessageCircle, X, Volume2, VolumeX } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar"
 import { cn } from "../../lib/utils"
@@ -13,10 +13,12 @@ import { useItemLike } from "../../hooks/useLike"
 import { toast } from "sonner"
 import apiClient from "../../api/client"
 import { Swiper, SwiperSlide } from "swiper/react"
-import { Pagination } from "swiper/modules"
+import { Pagination, Navigation, Autoplay } from "swiper/modules"
 import "swiper/css"
 // @ts-expect-error Swiper css types are missing
 import "swiper/css/pagination"
+// @ts-expect-error Swiper css types are missing
+import "swiper/css/navigation"
 
 interface ShortsItemProps {
     short: Short
@@ -29,6 +31,7 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
     const [isDescriptionOpen, setIsDescriptionOpen] = useState(false)
     const [isCommentsOpen, setIsCommentsOpen] = useState(false)
+    const [hasInteracted, setHasInteracted] = useState(false)
 
     // Comments State
     const [comments, setComments] = useState<any[]>([])
@@ -52,6 +55,7 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
         if (!isActive) {
             setIsDescriptionOpen(false)
             setIsCommentsOpen(false)
+            setHasInteracted(false)
             // Optional: Reset image index? usually better to keep it
         }
     }, [isActive])
@@ -161,30 +165,52 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
                     </div>
 
                     {/* Main Image Swiper */}
-                    <div className="relative z-10 w-full h-full flex items-center justify-center">
-                        <div className="relative w-full max-h-full aspect-[9/16] max-w-full">
+                    <div
+                        className="relative z-10 w-full h-full flex items-center justify-center"
+                        onTouchStart={() => setHasInteracted(true)}
+                        onMouseDown={() => setHasInteracted(true)}
+                    >
+                        <div className="relative w-full max-h-full aspect-[9/16] max-w-full" style={{ "--swiper-navigation-color": "#fff", "--swiper-pagination-color": "#fff" } as React.CSSProperties}>
                             <Swiper
                                 direction="horizontal"
                                 className="w-full h-full"
-                                modules={[Pagination]}
+                                modules={[Pagination, Navigation, Autoplay]}
                                 pagination={{ clickable: true }}
+                                navigation={false} // Disable navigation arrows
+                                autoplay={{
+                                    delay: 5000,
+                                    disableOnInteraction: true, // Stop autoplay after user swipe
+                                    stopOnLastSlide: false,
+                                }}
                                 onSlideChange={(swiper) => setCurrentImageIndex(swiper.activeIndex)}
+                                onTouchStart={() => setHasInteracted(true)}
                                 nested={true}
                             >
                                 {productImages.length > 0 ? productImages.map((img, idx) => (
-                                    <SwiperSlide key={idx} className="flex items-center justify-center">
+                                    <SwiperSlide key={idx} className="flex items-center justify-center overflow-hidden">
                                         <img
                                             src={img || "/placeholder.svg"}
                                             alt={`${short.title} - ${idx + 1}`}
-                                            className="w-full h-full object-contain"
+                                            className={cn(
+                                                "w-full h-full object-contain transition-transform duration-700",
+                                                !hasInteracted && isActive && "animate-ken-burns-loop"
+                                            )}
+                                            style={{
+                                                // Reset animation when slide changes (conceptually handled by key prop usually)
+                                                // or strictly controlled by class presence.
+                                                willChange: "transform"
+                                            }}
                                         />
                                     </SwiperSlide>
                                 )) : (
-                                    <SwiperSlide className="flex items-center justify-center">
+                                    <SwiperSlide className="flex items-center justify-center overflow-hidden">
                                         <img
                                             src="/placeholder.svg"
                                             alt={short.title}
-                                            className="w-full h-full object-contain"
+                                            className={cn(
+                                                "w-full h-full object-contain",
+                                                !hasInteracted && isActive && "animate-ken-burns-loop"
+                                            )}
                                         />
                                     </SwiperSlide>
                                 )}
@@ -282,7 +308,6 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
                         className="flex items-center gap-1 text-sm font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] transition-opacity hover:opacity-80"
                     >
                         <span>概要を見る</span>
-                        <ChevronDown className="h-4 w-4" />
                     </button>
                 </div>
             </div>
