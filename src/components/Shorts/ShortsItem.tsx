@@ -144,7 +144,7 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
     return (
         <div className="relative w-full h-full bg-black overflow-hidden select-none">
             {/* Audio Player (Voiceover) */}
-            {isActive && short.audio_url && (
+            {short.audio_url && (
                 <AudioPlayer
                     src={short.audio_url}
                     isActive={isActive}
@@ -153,7 +153,7 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
             )}
 
             {/* Background Music Player */}
-            {isActive && bgmUrl && (
+            {bgmUrl && (
                 <AudioPlayer
                     src={bgmUrl}
                     isActive={isActive}
