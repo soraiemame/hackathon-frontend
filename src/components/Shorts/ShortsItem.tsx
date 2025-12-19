@@ -174,13 +174,14 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
             {/* Main Content Area */}
             <div className="absolute inset-0 flex items-center justify-center bg-black overflow-hidden">
                 <div className="relative w-full h-full max-w-[500px] mx-auto">
-                    {/* Blurred Background (Outer/Global) */}
+                    {/* Blurred Background */}
                     <div className="absolute inset-0 z-0">
                         <img
                             src={currentImage}
                             alt="background"
-                            className="absolute inset-0 w-full h-full object-cover blur-lg scale-110 brightness-50"
+                            className="absolute inset-0 w-full h-full object-cover blur-xl scale-125 opacity-50"
                         />
+                        <div className="absolute inset-0 bg-black/30" />
                     </div>
 
                     {/* Main Image Swiper */}
@@ -206,35 +207,27 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
                                 nested={true}
                             >
                                 {productImages.length > 0 ? productImages.map((img, idx) => (
-                                    <SwiperSlide key={idx} className="relative flex items-center justify-center overflow-hidden">
-                                        {/* Inner Background (Fills gaps) */}
-                                        <img
-                                            src={img || "/placeholder.svg"}
-                                            alt=""
-                                            className="absolute inset-0 w-full h-full object-cover blur-3xl scale-125 brightness-75 -z-10"
-                                        />
-                                        {/* Main Image */}
+                                    <SwiperSlide key={idx} className="flex items-center justify-center overflow-hidden">
                                         <img
                                             src={img || "/placeholder.svg"}
                                             alt={`${short.title} - ${idx + 1}`}
                                             className={cn(
-                                                "relative z-10 w-full h-full object-contain transition-transform duration-700",
+                                                "w-full h-full object-contain transition-transform duration-700",
                                                 !hasInteracted && isActive && "animate-ken-burns-loop"
                                             )}
+                                            style={{
+                                                // Reset animation when slide changes (conceptually handled by key prop usually)
+                                                // Removed will-change to prevent iOS memory crash
+                                            }}
                                         />
                                     </SwiperSlide>
                                 )) : (
-                                    <SwiperSlide className="relative flex items-center justify-center overflow-hidden">
-                                        <img
-                                            src="/placeholder.svg"
-                                            alt=""
-                                            className="absolute inset-0 w-full h-full object-cover blur-3xl scale-125 brightness-75 -z-10"
-                                        />
+                                    <SwiperSlide className="flex items-center justify-center overflow-hidden">
                                         <img
                                             src="/placeholder.svg"
                                             alt={short.title}
                                             className={cn(
-                                                "relative z-10 w-full h-full object-contain",
+                                                "w-full h-full object-contain",
                                                 !hasInteracted && isActive && "animate-ken-burns-loop"
                                             )}
                                         />
