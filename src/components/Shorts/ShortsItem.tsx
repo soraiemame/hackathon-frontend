@@ -294,9 +294,6 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm transition-colors hover:bg-black/50">
                         <MessageCircle className="h-6 w-6 text-white" />
                     </div>
-                    <span className="text-xs font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                        {comments.length}
-                    </span>
                 </button>
             </div>
 
