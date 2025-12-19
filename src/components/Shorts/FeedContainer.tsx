@@ -42,6 +42,17 @@ export default function FeedContainer() {
         }
     }, [activeIndex, hasMore, isLoading, loadMore, shorts.length])
 
+    // Disable Pull-to-Refresh (overscroll) globally while this component is active
+    useEffect(() => {
+        // Prevent default browser refresh on mobile
+        document.body.style.overscrollBehaviorY = "none";
+
+        return () => {
+            // Restore default behavior when leaving this page
+            document.body.style.overscrollBehaviorY = "auto";
+        };
+    }, []);
+
 
     if (shorts.length === 0 && isLoading) {
         return (
