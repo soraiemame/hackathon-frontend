@@ -18,7 +18,12 @@ export function useShortsFeed() {
             if (newShorts.length === 0) {
                 setHasMore(false);
             } else {
-                setShorts((prev) => [...prev, ...newShorts]);
+                setShorts((prev) => {
+                    const uniqueNewShorts = newShorts.filter(
+                        (ns) => !prev.some((ps) => ps.item_id === ns.item_id)
+                    );
+                    return [...prev, ...uniqueNewShorts];
+                });
                 // Cursor-based pagination: assume descending order by ID on backend
                 // So the last item's ID is the cursor for the next page
                 const lastItem = newShorts[newShorts.length - 1];

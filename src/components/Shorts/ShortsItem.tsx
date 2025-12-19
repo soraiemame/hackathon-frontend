@@ -9,11 +9,13 @@ import { ScrollArea } from "../../components/ui/scroll-area"
 import { useAuth } from "../../contexts/Auth"
 import AudioPlayer from "./AudioPlayer"
 import { type Short } from "../../types/short"
+import { type Comment } from "../../types/comment"
 import { useItemLike } from "../../hooks/useLike"
 import { toast } from "sonner"
 import apiClient from "../../api/client"
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Pagination, Navigation, Autoplay } from "swiper/modules"
+import { useNavigate } from "react-router-dom"
 import "swiper/css"
 // @ts-expect-error Swiper css types are missing
 import "swiper/css/pagination"
@@ -28,13 +30,14 @@ interface ShortsItemProps {
 }
 
 export default function ShortsItem({ short, isActive, isMuted, toggleMute }: ShortsItemProps) {
+    const navigate = useNavigate()
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
     const [isDescriptionOpen, setIsDescriptionOpen] = useState(false)
     const [isCommentsOpen, setIsCommentsOpen] = useState(false)
     const [hasInteracted, setHasInteracted] = useState(false)
 
     // Comments State
-    const [comments, setComments] = useState<any[]>([])
+    const [comments, setComments] = useState<Comment[]>([])
     const [newComment, setNewComment] = useState("")
     const [isCommentsLoading, setIsCommentsLoading] = useState(false)
 
@@ -64,17 +67,9 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
     useEffect(() => {
         if (isCommentsOpen && short.item_id) {
             setIsCommentsLoading(true)
-            apiClient.get(`/api/items/${short.item_id}/comments`)
+            apiClient.get<Comment[]>(`/api/items/${short.item_id}/comments`)
                 .then(res => {
-                    const data = res.data;
-                    setComments(data.map((c: any) => ({
-                        id: String(c.id),
-                        author: c.user?.username || `User ${c.user_id}`,
-                        avatar: c.user?.icon_url || "/placeholder.svg",
-                        content: c.body,
-                        timestamp: c.created_at,
-                        likes: 0 // API doesn't return comment likes yet
-                    })))
+                    setComments(res.data)
                 })
                 .catch(err => console.error("Failed to fetch comments", err))
                 .finally(() => setIsCommentsLoading(false))
@@ -93,20 +88,19 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
 
         try {
             // Note: apiClient automatically attaches Authorization header if logged in (handled by AuthProvider)
-            const res = await apiClient.post(`/api/items/${short.item_id}/comments`, { body: newComment })
+            const res = await apiClient.post<Comment>(`/api/items/${short.item_id}/comments`, { body: newComment })
 
             if (res.status === 200 || res.status === 201) {
                 const commentData = res.data;
-                // Fix: Removed duplicate declaration and .json() call
 
-                const newC = {
-                    id: String(commentData.id),
-                    author: currentUser?.username || "Me",
-                    avatar: currentUser?.icon_url || "/placeholder.svg",
-                    content: commentData.body,
-                    timestamp: "Just now",
-                    likes: 0
+                // Construct optimist or use returned data. 
+                // We trust the backend returns the created comment, but it might not have the populated 'user' field 
+                // if the backend is simple. However, we have 'currentUser' so we can polyfill it.
+                const newC: Comment = {
+                    ...commentData,
+                    user: commentData.user || currentUser || null // Ensure user is present if backend doesn't send it fully
                 }
+
                 setComments(prev => [...prev, newC])
                 setNewComment("")
             } else {
@@ -340,15 +334,15 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
                                         comments.map((comment) => (
                                             <div key={comment.id} className="flex gap-3">
                                                 <Avatar className="h-10 w-10 flex-shrink-0">
-                                                    <AvatarImage src={comment.avatar || "/placeholder.svg"} />
-                                                    <AvatarFallback>{comment.author[0]}</AvatarFallback>
+                                                    <AvatarImage src={comment.user?.icon_url || "/placeholder.svg"} />
+                                                    <AvatarFallback>{comment.user?.username?.[0] || "?"}</AvatarFallback>
                                                 </Avatar>
                                                 <div className="flex-1 space-y-1">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="font-semibold text-sm">{comment.author}</span>
-                                                        <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
+                                                        <span className="font-semibold text-sm">{comment.user?.username || `User ${comment.user_id}`}</span>
+                                                        <span className="text-xs text-muted-foreground">{new Date(comment.created_at).toLocaleString()}</span>
                                                     </div>
-                                                    <p className="text-sm leading-relaxed">{comment.content}</p>
+                                                    <p className="text-sm leading-relaxed">{comment.body}</p>
                                                 </div>
                                             </div>
                                         ))
@@ -426,7 +420,7 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
                                 className="w-full rounded-full font-semibold sticky bottom-0"
                                 size="lg"
                                 onClick={() => {
-                                    window.location.href = `/items/${short.item_id}`
+                                    navigate(`/items/${short.item_id}`)
                                 }}
                             >
                                 商品ページを見る

@@ -60,7 +60,7 @@ export default function FeedContainer() {
     }
 
     return (
-        <div style={{ height: "calc(100dvh - 64px)" }} className="bg-black w-full overflow-hidden">
+        <div style={{ height: "calc(100dvh - 64px)" }} className="bg-black w-full overflow-hidden overscroll-none touch-none">
             <Swiper
                 direction={'vertical'}
                 className="h-full w-full"
