@@ -197,8 +197,7 @@ export default function ShortsItem({ short, isActive, isMuted, toggleMute }: Sho
                                             )}
                                             style={{
                                                 // Reset animation when slide changes (conceptually handled by key prop usually)
-                                                // or strictly controlled by class presence.
-                                                willChange: "transform"
+                                                // Removed will-change to prevent iOS memory crash
                                             }}
                                         />
                                     </SwiperSlide>
