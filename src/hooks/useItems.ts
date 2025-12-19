@@ -3,6 +3,7 @@ import apiClient from "../api/client";
 import type { Item } from "../types/item";
 
 // フックが受け取るパラメータの型定義
+// フックが受け取るパラメータの型定義
 export interface UseItemsParams {
   sortBy?: string; // "new", "price-low", "popular" など
   categoryId?: number; // カテゴリーID
@@ -10,6 +11,8 @@ export interface UseItemsParams {
   minPrice?: number; // 下限価格
   maxPrice?: number; // 上限価格
   includeSold?: boolean; // 売り切れ商品を含めるかどうか
+  page?: number;     // ▼ 追加: ページ番号 (1始まり)
+  limit?: number;    // ▼ 追加: 1ページあたりの件数
 }
 
 // API呼び出し関数
@@ -35,6 +38,14 @@ async function fetchItems(params: UseItemsParams): Promise<Item[]> {
   if (params.minPrice !== undefined) queryParams.min_price = params.minPrice;
   if (params.maxPrice !== undefined) queryParams.max_price = params.maxPrice;
   if (params.includeSold !== undefined) queryParams.include_sold = params.includeSold;
+
+  // ▼▼▼ 追加: ページネーション ▼▼▼
+  const page = params.page || 1;
+  const limit = params.limit || 100;
+  const skip = (page - 1) * limit;
+
+  queryParams.skip = skip;
+  queryParams.limit = limit;
 
   // 3. APIリクエスト (クエリパラメータ付き)
   const { data } = await apiClient.get("/api/items", {

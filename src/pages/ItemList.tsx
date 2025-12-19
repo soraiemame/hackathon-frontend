@@ -28,13 +28,37 @@ export function ItemList() {
   // 売り切れ商品を除外するかどうかの状態
   const [excludeSold, setExcludeSold] = useState(false);
 
+  // ▼▼▼ 追加: ページネーション状態 ▼▼▼
+  const [page, setPage] = useState(1);
+  const LIMIT = 100;
+
   // --- 2. データ取得 & ロジック ---
   const { data: recommendedItems } = useRecommendations(isLoggedIn);
   const { data: items, isLoading } = useItems({
     sortBy: activeTab,
     categoryId: targetCategoryId,
     includeSold: !excludeSold, // チェックが入っていたら false (含めない)
+    page,
+    limit: LIMIT,
   });
+
+  // フィルター変更時にページをリセット
+  // (useEffectを使うか、各setterで同時にセットするかですが、ここではuseEffectで監視します)
+  // ただし、useEffectだとレンダリングが1回余分に走る可能性があるので、setterのラッパーを作るのも手ですが、
+  // シンプルにuseEffectでいきます。
+  // Note: activeTab, targetCategoryId, excludeSoldが変わったらpage=1にする
+  // しかし、これらの変更が同時に起こる場合もあるので注意。
+  // 今回は個別のstate変更なので、useEffectでOK。
+  // ただ、pageが1のときにsetPage(1)しても再レンダリングは抑制されるはず。
+
+  // しかし、ここでのuseEffectは「paramsが変わった後にpageをリセット」しようとすると、
+  // すでにparamsが変わってfetchが走った後にpage=1になってまたfetch...となる可能性があります。
+  // 一番良いのは、setTargetCategoryIdなどを呼ぶときにsetPage(1)も呼ぶことです。
+  // コードを見ると直接 `onChange={setTargetCategoryId}` としているので、
+  // useEffectのアプローチが無難ですが、fetchの無駄を防ぐなら、ラッパー関数が良いです。
+
+  // ここではシンプルさと既存コードへの影響最小化のため、useEffectを使わずに
+  // 各onChangeハンドラを修正します。
 
   return (
     <div className="container px-4 py-8 md:px-6">
@@ -78,7 +102,13 @@ export function ItemList() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                 {/* ソート選択 */}
-                <Select value={activeTab} onValueChange={setActiveTab}>
+                <Select
+                  value={activeTab}
+                  onValueChange={(val) => {
+                    setActiveTab(val);
+                    setPage(1); // リセット
+                  }}
+                >
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="並び替え" />
                   </SelectTrigger>
@@ -95,7 +125,10 @@ export function ItemList() {
                     type="checkbox"
                     id="excludeSold"
                     checked={excludeSold}
-                    onChange={(e) => setExcludeSold(e.target.checked)}
+                    onChange={(e) => {
+                      setExcludeSold(e.target.checked);
+                      setPage(1); // リセット
+                    }}
                     className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                   />
                   <label
@@ -111,7 +144,10 @@ export function ItemList() {
             {/* カテゴリーセレクター */}
             <div className="w-full max-w-3xl">
               <CategorySelector
-                onChange={setTargetCategoryId}
+                onChange={(id) => {
+                  setTargetCategoryId(id);
+                  setPage(1); // リセット
+                }}
               />
             </div>
           </div>
@@ -145,9 +181,31 @@ export function ItemList() {
         </div>
 
         {!isLoading && items && items.length > 0 && (
-          <div className="flex justify-center mt-8">
-            <Button variant="outline" size="lg">
-              もっと見る
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <Button
+              variant="outline"
+              size="lg"
+              disabled={page === 1 || isLoading}
+              onClick={() => {
+                setPage((p) => Math.max(1, p - 1));
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            >
+              前のページ
+            </Button>
+            <span className="font-bold text-lg">Page {page}</span>
+            <Button
+              variant="outline"
+              size="lg"
+              // 次のページがあるかどうかの判定:
+              // 取得件数がLIMIT未満なら、それが最後のページとみなせる
+              disabled={!items || items.length < LIMIT || isLoading}
+              onClick={() => {
+                setPage((p) => p + 1);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            >
+              次のページ
             </Button>
           </div>
         )}
