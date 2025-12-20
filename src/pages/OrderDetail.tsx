@@ -151,14 +151,14 @@ export function OrderDetail() {
             )}
 
             {/* 相手が存在する場合のみメッセージボタンを表示 */}
-            <Button
+            {/* <Button
               variant="outline"
               className="w-full bg-transparent"
               disabled={!partner}
             >
               <MessageCircle className="h-4 w-4 mr-2" />
               メッセージを送る
-            </Button>
+            </Button> */}
           </CardContent>
         </Card>
 
