@@ -13,7 +13,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Badge } from "../components/ui/badge";
 import { Separator } from "../components/ui/separator";
-import { Package, CreditCard, MessageCircle, Star } from "lucide-react";
+import { Package, CreditCard, Star } from "lucide-react";
 import { FullPageLoader } from "../components/ui/full-page-loader";
 
 export function OrderDetail() {
@@ -150,15 +150,6 @@ export function OrderDetail() {
               </p>
             )}
 
-            {/* 相手が存在する場合のみメッセージボタンを表示 */}
-            {/* <Button
-              variant="outline"
-              className="w-full bg-transparent"
-              disabled={!partner}
-            >
-              <MessageCircle className="h-4 w-4 mr-2" />
-              メッセージを送る
-            </Button> */}
           </CardContent>
         </Card>
 
